@@ -29,7 +29,7 @@ val testItem = registerItem("test", ::Item, Settings())
 val randomBlockPlacerItem = registerItem("random_block_placer", ::RandomBlockPlacerItem, Settings())
 
 fun registerItems() {
-    ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register {
+    ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
         with(it) {
             add(testItem)
             add(randomBlockPlacerItem)
