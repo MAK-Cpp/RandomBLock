@@ -4,9 +4,13 @@
   "version": "${version}",
 
   "name": "RandomBlock",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "description": "Tool for random placing blocks from some set",
+  "authors": [
+    "Maxim Primakov"
+  ],
+  "contact": {
+    "email": "spartmenik@gmail.com"
+  },
 
   "license": "MIT",
   "icon": "assets/randomblock/icon.png",

@@ -1,8 +1,10 @@
+import java.net.URI
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "2.1.10"
+    kotlin("plugin.serialization") version "2.1.0"
     id("fabric-loom") version "1.10-SNAPSHOT"
     id("maven-publish")
 }
@@ -40,6 +42,10 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    maven {
+        name = "Ladysnake Mods"
+        url = URI("https://maven.ladysnake.org/releases")
+    }
 }
 
 dependencies {
@@ -50,6 +56,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 }
 
 tasks.processResources {
