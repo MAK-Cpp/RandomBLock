@@ -1,4 +1,3 @@
-import java.net.URI
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -42,10 +41,6 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
-    maven {
-        name = "Ladysnake Mods"
-        url = URI("https://maven.ladysnake.org/releases")
-    }
 }
 
 dependencies {
