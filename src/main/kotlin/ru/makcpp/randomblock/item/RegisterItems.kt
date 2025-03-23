@@ -26,7 +26,7 @@ fun registerItem(name: String, itemFactory: (Settings) -> Item, settings: Settin
 }
 
 val testItem = registerItem("test", ::Item, Settings())
-val randomBlockPlacerItem = registerItem("random_block_placer", ::RandomBlockPlacerItem, Settings())
+val randomBlockPlacerItem = registerItem("random_block_placer", ::RandomBlockPlacerItem, Settings().maxCount(1))
 
 fun registerItems() {
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {

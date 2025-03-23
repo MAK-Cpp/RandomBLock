@@ -10,12 +10,17 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemUsageContext
+import net.minecraft.screen.ScreenHandlerContext
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.sound.SoundCategory
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.isServer
 
 /**
@@ -102,5 +107,26 @@ class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
             if (player.isCreative) useOnBlockInCreative(pos, playerBlockItems)
             else useOnBlock(pos, player, playerBlockItems)
         }
+    }
+
+    override fun use(world: World, user: PlayerEntity, hand: Hand): ActionResult {
+        if (user.isSneaking) {
+            if (world.isServer()) {
+                user.openHandledScreen(
+                    SimpleNamedScreenHandlerFactory(
+                        { syncId, playerInventory, player ->
+                            RandomBlockPlacerItemGuiDescription(
+                                syncId,
+                                playerInventory,
+                                ScreenHandlerContext.create(world, player.blockPos)
+                            )
+                        },
+                        Text.translatable("item.randomblock.random_block_placer")
+                    )
+                )
+            }
+            return ActionResult.SUCCESS
+        }
+        return super.use(world, user, hand)
     }
 }
