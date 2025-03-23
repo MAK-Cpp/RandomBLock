@@ -20,7 +20,7 @@ import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.client.json.BLOCK_ITEMS_LIST_SERIALIZER
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
-import ru.makcpp.randomblock.gui.SCREEN_HANDLER_TYPE
+import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.item.RandomBlockPlacerItem
 
 class RandomBlockClient : ClientModInitializer {
@@ -44,7 +44,7 @@ class RandomBlockClient : ClientModInitializer {
             saveConfig(requireNotNull(client.player).uuid)
         }
         // Экран для предмета, где можно настраивать блоки
-        HandledScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(SCREEN_HANDLER_TYPE)
+        HandledScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER)
         { gui, inventory, title -> RandomBlockPlacerItemScreen(gui, inventory.player, title) }
     }
 

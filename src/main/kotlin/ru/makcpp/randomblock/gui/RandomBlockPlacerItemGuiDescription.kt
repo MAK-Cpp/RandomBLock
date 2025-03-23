@@ -12,8 +12,7 @@ import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.util.Identifier
 import ru.makcpp.randomblock.RandomBlock
 
-
-val SCREEN_HANDLER_TYPE = Registry.register(
+val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ScreenHandlerType<RandomBlockPlacerItemGuiDescription> = Registry.register(
     Registries.SCREEN_HANDLER,
     Identifier.of(RandomBlock.MOD_ID, "random_block_placer"),
     ScreenHandlerType(
@@ -24,7 +23,7 @@ val SCREEN_HANDLER_TYPE = Registry.register(
 
 class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventory, context: ScreenHandlerContext) :
     SyncedGuiDescription(
-        SCREEN_HANDLER_TYPE,
+        RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
         syncId,
         inventory,
         getBlockInventory(context, INVENTORY_SIZE),
