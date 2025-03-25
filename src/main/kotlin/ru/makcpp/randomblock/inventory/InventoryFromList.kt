@@ -24,17 +24,14 @@ class InventoryFromList(val blockItems: MutableList<BlockItem?>) : Inventory {
         return blockItemsAsStacks[slot]
     }
 
-    override fun removeStack(slot: Int, amount: Int): ItemStack {
-        LOGGER.debug("Removing $slot $amount")
-        return removeStack(slot)
-    }
+    override fun removeStack(slot: Int, amount: Int): ItemStack = removeStack(slot)
 
     override fun removeStack(slot: Int): ItemStack {
         LOGGER.debug("Removing $slot")
-        val result = blockItemsAsStacks[slot]
         blockItemsAsStacks[slot] = ItemStack.EMPTY
         blockItems[slot] = null
-        return result
+        // В этом инвентаре все предметы - фантомные, поэтому когда мы достаем стэк, он просто исчезает
+        return ItemStack.EMPTY
     }
 
     override fun setStack(slot: Int, stack: ItemStack) {
