@@ -2,13 +2,14 @@ package ru.makcpp.randomblock.item
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.collections.set
 import kotlin.random.Random
 import net.minecraft.block.Block
 import net.minecraft.block.ShapeContext
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.BlockItem
-import net.minecraft.item.Item
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
@@ -21,6 +22,7 @@ import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
+import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.isServer
 
 /**
@@ -28,20 +30,22 @@ import ru.makcpp.randomblock.isServer
  *
  * Позволяет установить случайный блок из набора
  */
-class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
+class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
     }
 
-    private val playersBlockItems: MutableMap<UUID, MutableList<BlockItem>> = ConcurrentHashMap()
+    private val playersBlockItems: MutableMap<UUID, MutableList<BlockItem?>> = ConcurrentHashMap()
 
-    fun joinPlayer(playerUUID: UUID, blockItems: MutableList<BlockItem>) {
+    fun joinPlayer(playerUUID: UUID, blockItems: MutableList<BlockItem?>) {
         playersBlockItems[playerUUID] = blockItems
     }
 
-    fun disconnectPlayer(playerUUID: UUID): List<BlockItem> = requireNotNull(playersBlockItems.remove(playerUUID)) {
-        "Player $playerUUID not found"
-    }
+    fun disconnectPlayer(playerUUID: UUID): List<BlockItem?> =
+        requireNotNull(playersBlockItems.remove(playerUUID)) { "Player $playerUUID not found" }
+
+    fun playersBlockItemsAsInventory(playerUUID: UUID): Inventory =
+        InventoryFromList(requireNotNull(playersBlockItems[playerUUID]) { "Player $playerUUID not found" })
 
     private fun tryPlaceBlock(world: World, block: Block, pos: BlockPos): ActionResult {
         LOGGER.debug("Placing random item {}", block)
@@ -66,7 +70,7 @@ class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
     private fun ItemUsageContext.useOnBlockInCreative(pos: BlockPos, blockItems: List<BlockItem>): ActionResult {
         LOGGER.debug("player is in creative")
 
-        val block = blockItems[Random.nextInt(blockItems.size)].block
+        val block = blockItems[ThreadLocalRandom.current().nextInt(blockItems.size)].block
         return tryPlaceBlock(world, block, pos)
     }
 
@@ -83,7 +87,7 @@ class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
             return ActionResult.PASS
         }
 
-        val playersItemStack = playersItemStacks[Random.nextInt(playersItemStacks.size)]
+        val playersItemStack = playersItemStacks[ThreadLocalRandom.current().nextInt(playersItemStacks.size)]
         val block = (playersItemStack.item as BlockItem).block
 
         return tryPlaceBlock(world, block, pos).also {
@@ -96,7 +100,7 @@ class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         val pos = context.blockPos.offset(context.side)
         val player = context.player ?: return ActionResult.PASS
-        val playerBlockItems = playersBlockItems[player.uuid] ?: return ActionResult.PASS
+        val playerBlockItems = playersBlockItems[player.uuid]?.filterNotNull() ?: return ActionResult.PASS
         if (playerBlockItems.isEmpty()) {
             return ActionResult.PASS
         }
@@ -121,7 +125,7 @@ class RandomBlockPlacerItem(settings: Settings) : Item(settings) {
                                 ScreenHandlerContext.create(world, player.blockPos)
                             )
                         },
-                        Text.translatable("item.randomblock.random_block_placer")
+                        Text.translatable("item.randomblock.random_block_placer_item")
                     )
                 )
             }

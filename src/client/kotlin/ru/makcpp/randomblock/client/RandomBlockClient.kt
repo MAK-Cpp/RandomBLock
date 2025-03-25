@@ -13,8 +13,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ingame.HandledScreens
 import net.minecraft.item.BlockItem
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
@@ -22,10 +20,10 @@ import ru.makcpp.randomblock.client.json.BLOCK_ITEMS_LIST_SERIALIZER
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.item.RandomBlockPlacerItem
+import ru.makcpp.randomblock.item.getItem
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
-        val RANDOM_BLOCK_PLACER_IDENTIFIER: Identifier = Identifier.of(RandomBlock.MOD_ID, "random_block_placer")
         val LOGGER = LoggerFactory.getLogger(RandomBlockClient::class.java)!!
     }
 
@@ -44,26 +42,26 @@ class RandomBlockClient : ClientModInitializer {
             saveConfig(requireNotNull(client.player).uuid)
         }
         // Экран для предмета, где можно настраивать блоки
-        HandledScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER)
+        HandledScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(
+            RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
+        )
         { gui, inventory, title -> RandomBlockPlacerItemScreen(gui, inventory.player, title) }
     }
-
-    private fun getRandomBlockPlacerItem() =
-        Registries.ITEM.get(RANDOM_BLOCK_PLACER_IDENTIFIER) as RandomBlockPlacerItem
 
     private fun loadConfig(playerUUID: UUID) {
         LOGGER.debug("loading config for player with uuid {}", playerUUID)
 
-        val randomBlockPlacerItem = getRandomBlockPlacerItem()
-        val blockItems = mutableListOf<BlockItem>()
-        if (configFilePath.notExists()) {
+        val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
+        val blockItems: MutableList<BlockItem?> = if (configFilePath.notExists()) {
             LOGGER.debug("there is no config file, creating new one.")
 
-            configFilePath.createDirectories().createFile()
+            configFilePath.parent.createDirectories()
+            configFilePath.createFile()
+
+            MutableList(9) { null }
         } else {
             val config = configFilePath.readText()
-            Json.decodeFromString(BLOCK_ITEMS_LIST_SERIALIZER, config)
-                .forEach(blockItems::add)
+            Json.decodeFromString(BLOCK_ITEMS_LIST_SERIALIZER, config).toMutableList()
         }
 
         LOGGER.debug("config file loaded: {}", configFilePath)
@@ -74,7 +72,7 @@ class RandomBlockClient : ClientModInitializer {
     private fun saveConfig(playerUUID: UUID) {
         LOGGER.debug("saving config for player with uuid {}", playerUUID)
 
-        val randomBlockPlacerItem = getRandomBlockPlacerItem()
+        val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
         val blockItems = randomBlockPlacerItem.disconnectPlayer(playerUUID)
         configFilePath.writeText(Json.encodeToString(BLOCK_ITEMS_LIST_SERIALIZER, blockItems))
     }

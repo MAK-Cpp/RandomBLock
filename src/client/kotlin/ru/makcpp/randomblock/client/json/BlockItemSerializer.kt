@@ -11,17 +11,25 @@ import net.minecraft.item.BlockItem
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 
-object BlockItemSerializer : KSerializer<BlockItem> {
+object BlockItemSerializer : KSerializer<BlockItem?> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("net.minecraft.item.BlockItem", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: BlockItem) {
-        val itemId = Registries.ITEM.getId(value).toString()
-        encoder.encodeString(itemId)
+    override fun serialize(encoder: Encoder, value: BlockItem?) {
+        if (value == null) {
+            encoder.encodeString("null")
+        } else {
+            val itemId = Registries.ITEM.getId(value).toString()
+            encoder.encodeString(itemId)
+        }
     }
 
-    override fun deserialize(decoder: Decoder): BlockItem {
-        val itemId = Identifier.of(decoder.decodeString())
+    override fun deserialize(decoder: Decoder): BlockItem? {
+        val string = decoder.decodeString()
+        if (string == "null") {
+            return null
+        }
+        val itemId = Identifier.of(string)
         return Registries.ITEM.get(itemId) as BlockItem
     }
 }

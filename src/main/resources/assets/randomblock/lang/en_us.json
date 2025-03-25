@@ -1,5 +1,4 @@
 {
 //  "item.mod_id.object_name": "Object name"
-  "item.randomblock.test": "Test object",
-  "item.randomblock.random_block_placer": "Random block placer"
+  "item.randomblock.random_block_placer_item": "Random block placer"
 }

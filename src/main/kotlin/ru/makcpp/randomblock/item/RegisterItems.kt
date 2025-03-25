@@ -10,14 +10,18 @@ import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 import ru.makcpp.randomblock.RandomBlock
+import ru.makcpp.randomblock.util.camelToSnakeCase
 
+inline fun <reified T : ModItem> getItemId(): Identifier = T::class.simpleName
+    ?.let { Identifier.of(RandomBlock.MOD_ID, it.camelToSnakeCase()) }
+    ?: throw IllegalArgumentException("No class name for ModItem")
 
-fun registerItem(name: String, itemFactory: (Settings) -> Item, settings: Settings): Item {
+inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) -> T, settings: Settings): T {
     // Create the item key.
-    val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, Identifier.of(RandomBlock.MOD_ID, name))
+    val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, getItemId<T>())
 
     // Create the item instance.
-    val item: Item = itemFactory(settings.registryKey(itemKey))
+    val item: T = itemFactory(settings.registryKey(itemKey))
 
     // Register the item.
     Registry.register(Registries.ITEM, itemKey, item)
@@ -25,13 +29,11 @@ fun registerItem(name: String, itemFactory: (Settings) -> Item, settings: Settin
     return item
 }
 
-val testItem = registerItem("test", ::Item, Settings())
-val randomBlockPlacerItem = registerItem("random_block_placer", ::RandomBlockPlacerItem, Settings().maxCount(1))
+val randomBlockPlacerItem = registerItem(::RandomBlockPlacerItem, Settings().maxCount(1))
 
 fun registerItems() {
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
         with(it) {
-            add(testItem)
             add(randomBlockPlacerItem)
         }
     }
