@@ -1,4 +1,4 @@
-package ru.makcpp.randomblock.client.json
+package ru.makcpp.randomblock.json
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer

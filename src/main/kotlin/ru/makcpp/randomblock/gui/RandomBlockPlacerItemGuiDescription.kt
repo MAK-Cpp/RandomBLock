@@ -3,6 +3,7 @@ package ru.makcpp.randomblock.gui
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
+import io.github.cottonmc.cotton.gui.widget.WTextField
 import io.github.cottonmc.cotton.gui.widget.data.Insets
 import java.util.function.Consumer
 import net.minecraft.entity.player.PlayerEntity
@@ -15,6 +16,7 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.ClickType
+import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.item.RandomBlockPlacerItem
 import ru.makcpp.randomblock.item.getItem
@@ -49,11 +51,13 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             setInsets(Insets.ROOT_PANEL)
             val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
             val blockItemsInventory = randomBlockPlacerItem.playersBlockItemsAsInventory(inventory.player.uuid)
-            val blocksSet = WItemSlot(blockItemsInventory, 0, 9, 1, false)
+            val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
+            val check = WIntField()
 
             add(blocksSet, 0, 1)
+            add(check, 3, 1)
 
-            add(gui.createPlayerInventoryPanel(), 0, 3)
+            add(gui.createPlayerInventoryPanel(), 0, 5)
 
             validate(gui)
         }

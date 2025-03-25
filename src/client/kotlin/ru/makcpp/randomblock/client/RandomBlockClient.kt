@@ -16,7 +16,7 @@ import net.minecraft.item.BlockItem
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
-import ru.makcpp.randomblock.client.json.BLOCK_ITEMS_LIST_SERIALIZER
+import ru.makcpp.randomblock.json.BLOCK_ITEMS_LIST_SERIALIZER
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.item.RandomBlockPlacerItem
