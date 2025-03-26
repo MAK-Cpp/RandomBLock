@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "randomblock:item/test"
+    "layer0": "randomblock:item/question_mark"
   }
 }

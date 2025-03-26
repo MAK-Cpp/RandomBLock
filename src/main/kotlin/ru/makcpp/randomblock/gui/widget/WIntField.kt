@@ -11,17 +11,14 @@ data class MutableValueReference<T>(
 class WIntField(private val valueRef: MutableValueReference<Int>) : WTextField() {
 
     init {
-        println("constructor of WIntField")
         width = 32
         height = 16
         maxLength = Integer.MAX_VALUE
         suggestion = Text.of { "0" }
-        text = valueRef.get().toString()
+        text = valueRef.get().let { if (it == 0) "" else it.toString() }
         setTextPredicate { text ->
             text.isEmpty() || text.toIntOrNull().let { num ->
-                num != null
-                        && num in 0 until 10_000
-                        && num.toString() == text
+                num != null && num in 1 until 10_000
             }
         }
         setChangedListener { text ->
@@ -35,11 +32,7 @@ class WIntField(private val valueRef: MutableValueReference<Int>) : WTextField()
         return this
     }
 
-    override fun getX(): Int {
-        return super.getX() + 1
-    }
+    override fun getX(): Int = super.getX() + 1
 
-    override fun getY(): Int {
-        return super.getY() + 1
-    }
+    override fun getY(): Int = super.getY() + 1
 }
