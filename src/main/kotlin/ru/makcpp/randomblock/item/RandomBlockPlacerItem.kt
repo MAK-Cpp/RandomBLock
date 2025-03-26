@@ -125,7 +125,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         val blockItems = blockItemsWithProbabilities.mapNotNull { it.blockItem }
 
         // 2) Получить все стеки предметов, которые содержат нужные нам предметы
-        val playersItemStacks = with(player.inventory) { main + offHand }.filter { blockItems.contains(it.item) }
+        val playersItemStacks = player.inventory.mainStacks.filter { blockItems.contains(it.item) }
         if (playersItemStacks.isEmpty()) {
             LOGGER.debug("There is no items in player's inventory")
             return ActionResult.PASS

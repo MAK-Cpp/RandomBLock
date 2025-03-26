@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.1.10"
+    kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.0"
     id("fabric-loom") version "1.10-SNAPSHOT"
     id("maven-publish")
@@ -54,14 +54,15 @@ dependencies {
     mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    include("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     // https://github.com/CottonMC/LibGui
-    modImplementation("io.github.cottonmc:LibGui:12.0.1+1.21.2")
-    include("io.github.cottonmc:LibGui:12.0.1+1.21.2")
+    modImplementation("io.github.cottonmc:LibGui:13.0.0+1.21.5")
+    include("io.github.cottonmc:LibGui:13.0.0+1.21.5")
 }
 
 tasks.processResources {
