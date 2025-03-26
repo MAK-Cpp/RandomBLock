@@ -33,5 +33,3 @@ object BlockItemSerializer : KSerializer<BlockItem?> {
         return Registries.ITEM.get(itemId) as BlockItem
     }
 }
-
-val BLOCK_ITEMS_LIST_SERIALIZER = ListSerializer(BlockItemSerializer)

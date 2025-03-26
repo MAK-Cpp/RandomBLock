@@ -36,13 +36,18 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     }
 
     private val playersBlockItems: MutableMap<UUID, MutableList<BlockItem?>> = ConcurrentHashMap()
+    private val playersProbabilities: MutableMap<UUID, MutableList<Int>> = ConcurrentHashMap()
 
-    fun joinPlayer(playerUUID: UUID, blockItems: MutableList<BlockItem?>) {
-        playersBlockItems[playerUUID] = blockItems
+    fun joinPlayer(playerUUID: UUID, blockItems: List<BlockItemWithProbability>) {
+        playersBlockItems[playerUUID] = blockItems.map { it.blockItem }.toMutableList()
+        playersProbabilities[playerUUID] = blockItems.map { it.probability }.toMutableList()
     }
 
-    fun disconnectPlayer(playerUUID: UUID): List<BlockItem?> =
-        requireNotNull(playersBlockItems.remove(playerUUID)) { "Player $playerUUID not found" }
+    fun disconnectPlayer(playerUUID: UUID): List<BlockItemWithProbability> {
+        val blockItems = requireNotNull(playersBlockItems.remove(playerUUID)) { "Player $playerUUID not found" }
+        val probabilities = requireNotNull(playersProbabilities.remove(playerUUID)) { "Player $playerUUID not found" }
+        return blockItems.mapIndexed { i, item -> BlockItemWithProbability(item, probabilities[i]) }
+    }
 
     fun playersBlockItemsAsInventory(playerUUID: UUID): Inventory =
         InventoryFromList(requireNotNull(playersBlockItems[playerUUID]) { "Player $playerUUID not found" })
