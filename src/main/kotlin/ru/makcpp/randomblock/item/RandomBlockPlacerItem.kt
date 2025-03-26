@@ -2,7 +2,6 @@ package ru.makcpp.randomblock.item
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.collections.set
 import net.minecraft.block.Block
 import net.minecraft.block.ShapeContext
