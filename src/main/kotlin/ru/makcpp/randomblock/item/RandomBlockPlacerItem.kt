@@ -25,6 +25,16 @@ import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.isServer
 
+private typealias PlayersMap<T> = MutableMap<UUID, T>
+
+private fun <T> PlayersMap<T>.notNull(playerUUID: UUID, func: (UUID) -> T?): T = requireNotNull(func(playerUUID)) {
+    "Player $playerUUID not found"
+}
+
+private fun <T> PlayersMap<T>.getNotNull(playerUUID: UUID): T = notNull(playerUUID, ::get)
+
+private fun <T> PlayersMap<T>.removeNotNull(playerUUID: UUID): T = notNull(playerUUID, ::remove)
+
 /**
  * Предмет для случайного выбора блока и установки его.
  *
@@ -35,8 +45,8 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
     }
 
-    private val playersBlockItems: MutableMap<UUID, MutableList<BlockItem?>> = ConcurrentHashMap()
-    private val playersProbabilities: MutableMap<UUID, MutableList<Int>> = ConcurrentHashMap()
+    private val playersBlockItems: PlayersMap<MutableList<BlockItem?>> = ConcurrentHashMap()
+    private val playersProbabilities: PlayersMap<MutableList<Int>> = ConcurrentHashMap()
 
     fun joinPlayer(playerUUID: UUID, blockItems: List<BlockItemWithProbability>) {
         playersBlockItems[playerUUID] = blockItems.map { it.blockItem }.toMutableList()
@@ -44,13 +54,15 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     }
 
     fun disconnectPlayer(playerUUID: UUID): List<BlockItemWithProbability> {
-        val blockItems = requireNotNull(playersBlockItems.remove(playerUUID)) { "Player $playerUUID not found" }
-        val probabilities = requireNotNull(playersProbabilities.remove(playerUUID)) { "Player $playerUUID not found" }
+        val blockItems = playersBlockItems.removeNotNull(playerUUID)
+        val probabilities = playersProbabilities.removeNotNull(playerUUID)
         return blockItems.mapIndexed { i, item -> BlockItemWithProbability(item, probabilities[i]) }
     }
 
     fun playersBlockItemsAsInventory(playerUUID: UUID): Inventory =
-        InventoryFromList(requireNotNull(playersBlockItems[playerUUID]) { "Player $playerUUID not found" })
+        InventoryFromList(playersBlockItems.getNotNull(playerUUID))
+
+    fun playersProbabilities(playerUUID: UUID): MutableList<Int> = playersProbabilities.getNotNull(playerUUID)
 
     private fun tryPlaceBlock(world: World, block: Block, pos: BlockPos): ActionResult {
         LOGGER.debug("Placing random item {}", block)

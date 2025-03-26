@@ -3,12 +3,9 @@ package ru.makcpp.randomblock.gui
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
-import io.github.cottonmc.cotton.gui.widget.WTextField
 import io.github.cottonmc.cotton.gui.widget.data.Insets
-import java.util.function.Consumer
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.resource.featuretoggle.FeatureFlags
@@ -16,6 +13,7 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.ClickType
+import ru.makcpp.randomblock.gui.widget.MutableValueReference
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.item.RandomBlockPlacerItem
@@ -50,13 +48,24 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             val gui = this@RandomBlockPlacerItemGuiDescription
             setInsets(Insets.ROOT_PANEL)
             val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
-            val blockItemsInventory = randomBlockPlacerItem.playersBlockItemsAsInventory(inventory.player.uuid)
+            val uuid = inventory.player.uuid
+
+            // Набор блоков, из которых будет рандомно ставиться какой-то случайный
+            val blockItemsInventory = randomBlockPlacerItem.playersBlockItemsAsInventory(uuid)
             val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
-            val check = WIntField()
-
             add(blocksSet, 0, 1)
-            add(check, 3, 1)
 
+            // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
+            val probabilities: MutableList<Int> = randomBlockPlacerItem.playersProbabilities(uuid)
+            repeat(3) { i ->
+                repeat(3) { j ->
+                    val id = i * 3 + j
+                    val intField = WIntField(MutableValueReference({ probabilities[id] }, { probabilities[id] = it }))
+                    add(intField, 3 + j * 2, 1 + i)
+                }
+            }
+
+            // Инвентарь игрока
             add(gui.createPlayerInventoryPanel(), 0, 5)
 
             validate(gui)

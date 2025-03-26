@@ -3,26 +3,29 @@ package ru.makcpp.randomblock.gui.widget
 import io.github.cottonmc.cotton.gui.widget.WTextField
 import net.minecraft.text.Text
 
-class WIntField : WTextField() {
-    companion object {
-        @JvmStatic
-        private var result = 1
-    }
+data class MutableValueReference<T>(
+    val get: () -> T,
+    val set: (T) -> Unit
+)
+
+class WIntField(private val valueRef: MutableValueReference<Int>) : WTextField() {
 
     init {
         println("constructor of WIntField")
         width = 32
         height = 16
         maxLength = Integer.MAX_VALUE
-        suggestion = Text.of { "1" }
-        text = result.toString()
+        suggestion = Text.of { "0" }
+        text = valueRef.get().toString()
         setTextPredicate { text ->
             text.isEmpty() || text.toIntOrNull().let { num ->
-                num != null && num in 1 until 10_000
+                num != null
+                        && num in 0 until 10_000
+                        && num.toString() == text
             }
         }
         setChangedListener { text ->
-            result = if (text.isEmpty()) 1 else text.toInt()
+            valueRef.set(if (text.isEmpty()) 0 else text.toInt())
         }
     }
 
