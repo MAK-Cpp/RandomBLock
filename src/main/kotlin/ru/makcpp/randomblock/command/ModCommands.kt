@@ -20,8 +20,6 @@ val GET_RBP_ITEM = Command<ServerCommandSource> { context ->
     1
 }
 
-fun registerCommands() {
-    CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
-        dispatcher.register(literal("RBP").executes(GET_RBP_ITEM))
-    }
+fun registerCommands() = CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
+    dispatcher.register(literal("RBP").executes(GET_RBP_ITEM))
 }

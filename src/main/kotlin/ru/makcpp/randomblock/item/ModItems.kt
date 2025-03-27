@@ -40,11 +40,8 @@ private inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) ->
 val RANDOM_BLOCK_PLACER_ITEM = registerItem(::RandomBlockPlacerItem, Settings().maxCount(1))
 
 
-
-fun registerItems() {
-    ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
-        with(it) {
-            add(RANDOM_BLOCK_PLACER_ITEM)
-        }
+fun registerItems() = ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
+    with(it) {
+        add(RANDOM_BLOCK_PLACER_ITEM)
     }
 }
