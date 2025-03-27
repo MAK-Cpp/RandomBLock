@@ -9,13 +9,16 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemUsageContext
+import net.minecraft.item.Items
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.sound.SoundCategory
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.BlockRotation
 import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,15 +43,16 @@ private fun <T> PlayersMap<T>.removeNotNull(playerUUID: UUID): T = notNull(playe
  */
 class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
+        private val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
+
+        private val DIRECTIONS = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
     }
 
     private val playersBlockItems: PlayersMap<MutableList<BlockItem?>> = ConcurrentHashMap()
     private val playersProbabilities: PlayersMap<MutableList<Int>> = ConcurrentHashMap()
 
-    fun joinPlayersData(blockItems: List<BlockItem?>, probabilities: List<Int>): List<BlockItemWithProbability> {
-        return blockItems.mapIndexed { i, item -> BlockItemWithProbability(item, probabilities[i]) }
-    }
+    fun joinPlayersData(blockItems: List<BlockItem?>, probabilities: List<Int>): List<BlockItemWithProbability> =
+        blockItems.mapIndexed { i, item -> BlockItemWithProbability(item, probabilities[i]) }
 
     fun joinPlayer(playerUUID: UUID, blockItems: List<BlockItemWithProbability>) {
         playersBlockItems[playerUUID] = blockItems.map { it.blockItem }.toMutableList()
@@ -63,12 +67,19 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     fun playersProbabilities(playerUUID: UUID): MutableList<Int> = playersProbabilities.getNotNull(playerUUID)
 
-    private fun tryPlaceBlock(world: World, block: Block, pos: BlockPos): ActionResult {
+    private fun ItemUsageContext.tryPlaceBlock(block: Block, pos: BlockPos): ActionResult {
         LOGGER.debug("Placing random item {}", block)
 
         if (world.canPlace(block.defaultState, pos, ShapeContext.absent())) {
             if (world.isServer()) {
-                world.setBlockState(pos, block.defaultState)
+                var state = block.defaultState
+                for (i in 0 until 4) {
+                    if (DIRECTIONS[i] == horizontalPlayerFacing) {
+                        break
+                    }
+                    state = state.rotate(BlockRotation.CLOCKWISE_90)
+                }
+                world.setBlockState(pos, state)
                 val sound = block.defaultState.soundGroup.placeSound
                 world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, 1.0F)
             }
@@ -84,6 +95,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     }
 
     fun List<BlockItemWithProbability>.getRandomBlockItem(): BlockItem? {
+        // Оставим только те сущности, где есть и блок, и вероятность
         val filteredList = filter { it.blockItem != null && it.probability != 0 }
 
         val totalProbability = filteredList.sumOf { it.probability }
@@ -110,7 +122,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         LOGGER.debug("player is in creative")
 
         val block = blockItemsWithProbabilities.getRandomBlockItem()?.block ?: return ActionResult.PASS
-        return tryPlaceBlock(world, block, pos)
+        return tryPlaceBlock(block, pos)
     }
 
     private fun ItemUsageContext.useOnBlock(
@@ -144,7 +156,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         val playersItemStack = playersItemStacks.find { it.item == randomItem } ?: return ActionResult.PASS
         val block = randomItem.block
 
-        return tryPlaceBlock(world, block, pos).also {
+        return tryPlaceBlock(block, pos).also {
             // Если смогли поставить блок, то на стороне сервера уменьшим стак с этим блоком на один
             if (it == ActionResult.SUCCESS && world.isServer()) {
                 playersItemStack.decrement(1)
