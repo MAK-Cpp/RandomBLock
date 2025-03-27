@@ -8,6 +8,7 @@ import net.minecraft.block.ShapeContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.BlockItem
+import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.Items
 import net.minecraft.screen.ScreenHandlerContext
@@ -67,8 +68,10 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     fun playersProbabilities(playerUUID: UUID): MutableList<Int> = playersProbabilities.getNotNull(playerUUID)
 
-    private fun ItemUsageContext.tryPlaceBlock(block: Block, pos: BlockPos): ActionResult {
+    private fun ItemUsageContext.tryPlaceBlock(block: Block): ActionResult {
         LOGGER.debug("Placing random item {}", block)
+        val placeContext = ItemPlacementContext(this)
+        val pos = placeContext.blockPos
 
         if (world.canPlace(block.defaultState, pos, ShapeContext.absent())) {
             if (world.isServer()) {
@@ -116,17 +119,15 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
 
     private fun ItemUsageContext.useOnBlockInCreative(
-        pos: BlockPos,
         blockItemsWithProbabilities: List<BlockItemWithProbability>
     ): ActionResult {
         LOGGER.debug("player is in creative")
 
         val block = blockItemsWithProbabilities.getRandomBlockItem()?.block ?: return ActionResult.PASS
-        return tryPlaceBlock(block, pos)
+        return tryPlaceBlock(block)
     }
 
     private fun ItemUsageContext.useOnBlock(
-        pos: BlockPos,
         player: PlayerEntity,
         blockItemsWithProbabilities: List<BlockItemWithProbability>
     ): ActionResult {
@@ -156,7 +157,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         val playersItemStack = playersItemStacks.find { it.item == randomItem } ?: return ActionResult.PASS
         val block = randomItem.block
 
-        return tryPlaceBlock(block, pos).also {
+        return tryPlaceBlock(block).also {
             // Если смогли поставить блок, то на стороне сервера уменьшим стак с этим блоком на один
             if (it == ActionResult.SUCCESS && world.isServer()) {
                 playersItemStack.decrement(1)
@@ -165,7 +166,6 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     }
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
-        val pos = context.blockPos.offset(context.side)
         val player = context.player ?: return ActionResult.PASS
 
         val playerBlockItems: List<BlockItem?> = playersBlockItems[player.uuid] ?: return ActionResult.PASS
@@ -176,8 +176,8 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         LOGGER.debug("starting placing random block")
 
         return with(context) {
-            if (player.isCreative) useOnBlockInCreative(pos, playerData)
-            else useOnBlock(pos, player, playerData)
+            if (player.isCreative) useOnBlockInCreative(playerData)
+            else useOnBlock(player, playerData)
         }
     }
 
