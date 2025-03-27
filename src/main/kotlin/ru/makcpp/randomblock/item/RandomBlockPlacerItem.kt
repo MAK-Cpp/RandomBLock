@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.isServer
+import ru.makcpp.randomblock.json.BlockItemWithProbability
 
 private typealias PlayersMap<T> = MutableMap<UUID, T>
 

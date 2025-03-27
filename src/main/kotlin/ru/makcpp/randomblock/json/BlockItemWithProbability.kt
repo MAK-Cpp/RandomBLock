@@ -1,10 +1,9 @@
-package ru.makcpp.randomblock.item
+package ru.makcpp.randomblock.json
 
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.minecraft.item.BlockItem
-import ru.makcpp.randomblock.json.BlockItemSerializer
 
 @Serializable
 data class BlockItemWithProbability(

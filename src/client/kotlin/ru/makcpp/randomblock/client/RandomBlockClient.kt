@@ -18,7 +18,7 @@ import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
-import ru.makcpp.randomblock.item.BlockItemWithProbability
+import ru.makcpp.randomblock.json.BlockItemWithProbability
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 
 class RandomBlockClient : ClientModInitializer {
