@@ -19,8 +19,7 @@ import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.item.BlockItemWithProbability
-import ru.makcpp.randomblock.item.RandomBlockPlacerItem
-import ru.makcpp.randomblock.item.getItem
+import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
@@ -57,7 +56,6 @@ class RandomBlockClient : ClientModInitializer {
     private fun loadConfig(playerUUID: UUID) {
         LOGGER.debug("loading config for player with uuid {}", playerUUID)
 
-        val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
         val blockItems: List<BlockItemWithProbability> = if (configFilePath.notExists()) {
             LOGGER.debug("there is no config file, creating new one.")
 
@@ -72,14 +70,13 @@ class RandomBlockClient : ClientModInitializer {
 
         LOGGER.debug("config file loaded: {}", configFilePath)
 
-        randomBlockPlacerItem.joinPlayer(playerUUID, blockItems)
+        RANDOM_BLOCK_PLACER_ITEM.joinPlayer(playerUUID, blockItems)
     }
 
     private fun saveConfig(playerUUID: UUID) {
         LOGGER.debug("saving config for player with uuid {}", playerUUID)
 
-        val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
-        val blockItems = randomBlockPlacerItem.disconnectPlayer(playerUUID)
+        val blockItems = RANDOM_BLOCK_PLACER_ITEM.disconnectPlayer(playerUUID)
         configFilePath.writeText(PRETTY_JSON.encodeToString<List<BlockItemWithProbability>>(blockItems))
     }
 }

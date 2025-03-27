@@ -16,13 +16,12 @@ import net.minecraft.util.ClickType
 import ru.makcpp.randomblock.gui.widget.MutableValueReference
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
-import ru.makcpp.randomblock.item.RandomBlockPlacerItem
-import ru.makcpp.randomblock.item.getItem
-import ru.makcpp.randomblock.item.getItemId
+import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
+import ru.makcpp.randomblock.item.id
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ScreenHandlerType<RandomBlockPlacerItemGuiDescription> = Registry.register(
     Registries.SCREEN_HANDLER,
-    getItemId<RandomBlockPlacerItem>(),
+    RANDOM_BLOCK_PLACER_ITEM.id,
     ScreenHandlerType(
         { syncId, inventory -> RandomBlockPlacerItemGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY) },
         FeatureFlags.VANILLA_FEATURES
@@ -47,16 +46,15 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
         with(root) {
             val gui = this@RandomBlockPlacerItemGuiDescription
             setInsets(Insets.ROOT_PANEL)
-            val randomBlockPlacerItem = getItem<RandomBlockPlacerItem>()
             val uuid = inventory.player.uuid
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
-            val blockItemsInventory = randomBlockPlacerItem.playersBlockItemsAsInventory(uuid)
+            val blockItemsInventory = RANDOM_BLOCK_PLACER_ITEM.playersBlockItemsAsInventory(uuid)
             val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
             add(blocksSet, 0, 1)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
-            val probabilities: MutableList<Int> = randomBlockPlacerItem.playersProbabilities(uuid)
+            val probabilities: MutableList<Int> = RANDOM_BLOCK_PLACER_ITEM.playersProbabilities(uuid)
             repeat(3) { i ->
                 repeat(3) { j ->
                     val id = i * 3 + j

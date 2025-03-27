@@ -1,4 +1,5 @@
 {
-//  "item.mod_id.object_name": "Object name"
-  "item.randomblock.random_block_placer_item": "Random block placer"
+  "item.randomblock.random_block_placer_item": "Random block placer",
+
+  "message.error.rbp_already_in_inventory": "You already have a Random Block Placer in your inventory"
 }

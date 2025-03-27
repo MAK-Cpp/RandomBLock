@@ -12,29 +12,39 @@ import net.minecraft.util.Identifier
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.util.camelToSnakeCase
 
-inline fun <reified T : ModItem> getItemId(): Identifier = T::class.simpleName
+/**
+ * Абстракция над Item для того, чтобы отделить обычные предметы от предметов мода.
+ *
+ * (?) Проблема: не совместимо с BlockItem, т.к. это тоже наследник от Item
+ */
+abstract class ModItem(settings: Settings) : Item(settings)
+
+val Item.id: Identifier
+    get() = Registries.ITEM.getKey(this).get().registry
+
+private inline fun <reified T : ModItem> generateItemId(): Identifier = T::class.simpleName
     ?.let { Identifier.of(RandomBlock.MOD_ID, it.camelToSnakeCase()) }
     ?: throw IllegalArgumentException("No class name for ModItem")
 
-inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) -> T, settings: Settings): T {
+private inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) -> T, settings: Settings): T {
     // Create the item key.
-    val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, getItemId<T>())
-
+    val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, generateItemId<T>())
     // Create the item instance.
     val item: T = itemFactory(settings.registryKey(itemKey))
-
     // Register the item.
     Registry.register(Registries.ITEM, itemKey, item)
 
     return item
 }
 
-val randomBlockPlacerItem = registerItem(::RandomBlockPlacerItem, Settings().maxCount(1))
+val RANDOM_BLOCK_PLACER_ITEM = registerItem(::RandomBlockPlacerItem, Settings().maxCount(1))
+
+
 
 fun registerItems() {
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
         with(it) {
-            add(randomBlockPlacerItem)
+            add(RANDOM_BLOCK_PLACER_ITEM)
         }
     }
 }
