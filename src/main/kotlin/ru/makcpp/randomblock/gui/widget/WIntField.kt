@@ -32,4 +32,9 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
     override fun getX(): Int = super.getX() + 1
 
     override fun getY(): Int = super.getY() + 1
+
+    fun update() {
+        val value = valueRef.get()
+        text = if (value == 0) "" else value.toString()
+    }
 }

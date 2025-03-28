@@ -80,20 +80,24 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
                         { playerListRef.get().blocksWithProbabilities[i].probability = it },
                     )
                 }
+            val intFields = probabilities.map { WIntField(it) }
             repeat(3) { i ->
                 repeat(3) { j ->
                     val id = i * 3 + j
-                    val intField = WIntField(probabilities[id])
-                    add(intField, 3 + j * 2, 2 + i)
+                    add(intFields[id], 3 + j * 2, 2 + i)
                 }
             }
 
             // Следующая страница
-            val nextListButton =
-                WButton(Text.of { ">" }).setOnClick { currentListIndexRef.set(currentListIndexRef.get() + 1) }
+            val nextListButton = WButton(Text.of { ">" }).setOnClick {
+                currentListIndexRef.set(currentListIndexRef.get() + 1)
+                intFields.forEach { it.update() }
+            }
             // Предыдущая страница
-            val prevListButton =
-                WButton(Text.of { "<" }).setOnClick { currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0)) }
+            val prevListButton = WButton(Text.of { "<" }).setOnClick {
+                currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0))
+                intFields.forEach { it.update() }
+            }
             add(prevListButton, 0, 5)
             add(nextListButton, 1, 5)
 

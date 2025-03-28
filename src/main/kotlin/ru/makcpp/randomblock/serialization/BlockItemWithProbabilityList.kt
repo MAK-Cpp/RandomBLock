@@ -6,18 +6,6 @@ import kotlinx.serialization.Serializable
 import net.minecraft.item.BlockItem
 import ru.makcpp.randomblock.util.MutableValueRef
 
-@Serializable
-class PlayerList<T> private constructor(private val list: MutableList<T>) : MutableList<T> by list {
-    companion object {
-        operator fun <T> invoke(elements: List<T>): PlayerList<T> {
-            require(elements.size == 9) { "Expected 9 elements but got ${elements.size}" }
-            return PlayerList(elements.toMutableList())
-        }
-
-        operator fun <T> invoke(builder: (Int) -> T): PlayerList<T> = invoke(MutableList(9, builder))
-    }
-}
-
 
 @Serializable
 data class BlockItemWithProbabilityList(
