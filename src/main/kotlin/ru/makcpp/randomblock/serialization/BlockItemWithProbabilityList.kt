@@ -1,4 +1,4 @@
-package ru.makcpp.randomblock.json
+package ru.makcpp.randomblock.serialization
 
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -44,4 +44,7 @@ data class BlockItemWithProbabilityList(
                 { blockWithProb.probability = it }
             )
         })
+
+    val isEmpty: Boolean
+        get() = blocksWithProbabilities.all { it.isEmpty }
 }

@@ -1,9 +1,13 @@
 package ru.makcpp.randomblock.gui
 
 import io.github.cottonmc.cotton.gui.SyncedGuiDescription
+import io.github.cottonmc.cotton.gui.widget.WButton
+import io.github.cottonmc.cotton.gui.widget.WDynamicLabel
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
+import io.github.cottonmc.cotton.gui.widget.WText
 import io.github.cottonmc.cotton.gui.widget.data.Insets
+import kotlin.math.max
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.registry.Registries
@@ -12,13 +16,15 @@ import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.SlotActionType
+import net.minecraft.text.Text
 import net.minecraft.util.ClickType
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 import ru.makcpp.randomblock.item.id
-import ru.makcpp.randomblock.json.BlockItemWithProbabilityList
-import ru.makcpp.randomblock.json.PlayerList
+import ru.makcpp.randomblock.serialization.BlockItemWithProbability
+import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
+import ru.makcpp.randomblock.serialization.PlayerList
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.ValueRef
 
@@ -51,18 +57,50 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             setInsets(Insets.ROOT_PANEL)
             val uuid = inventory.player.uuid
 
-            // TODO: пока что нет переключения между листами, достали только текущий лист, научиться переключать их
-
             // Текущий лист
             val playerLists = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid)
             val playerListRef = ValueRef<BlockItemWithProbabilityList> { playerLists.currentList }
             val currentListIndexRef =
-                MutableValueRef<Int>({ playerLists.currentListNumber }, { playerLists.currentListNumber = it })
+                MutableValueRef<Int>({ playerLists.currentListNumber }, {
+                    require(it >= 0) { "Cannot set negate value" }
+                    if (it > playerLists.currentListNumber) {
+                        /**
+                         * Если новый номер больше старого, то новое значение либо меньше кол-ва страниц, либо нет
+                         *
+                         * Если нет, то добавим недостающие страницы, и тогда currentListNumber будет смотреть на
+                         * последнюю страницу
+                         */
+                        for (i in playerLists.lists.size..it) {
+                            playerLists.lists.add(
+                                BlockItemWithProbabilityList(
+                                    name = "new list ${i + 1}",
+                                    blocksWithProbabilities = PlayerList { BlockItemWithProbability() }
+                                )
+                            )
+                        }
+                        playerLists.currentListNumber = it
+                    } else {
+                        /**
+                         * Иначе, убираем все крайние, которые пустые
+                         */
+                        playerLists.currentListNumber = it
+                        for (i in playerLists.lists.size - 1 downTo it + 1) {
+                            if (!playerLists.lists.last().isEmpty) {
+                                break
+                            }
+                            playerLists.lists.removeLast()
+                        }
+                    }
+                })
+
+            // Название текущего списка (в будущем добавить изменение)
+            val label = WDynamicLabel { playerListRef.get().name }
+            add(label, 0, 1)
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
             val blockItemsInventory = InventoryFromList(playerListRef)
             val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
-            add(blocksSet, 0, 1)
+            add(blocksSet, 0, 2)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
             val probabilities: PlayerList<MutableValueRef<Int>> =
@@ -76,12 +114,19 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
                 repeat(3) { j ->
                     val id = i * 3 + j
                     val intField = WIntField(probabilities[id])
-                    add(intField, 3 + j * 2, 1 + i)
+                    add(intField, 3 + j * 2, 2 + i)
                 }
             }
 
+            val nextListButton =
+                WButton(Text.of { ">" }).setOnClick { currentListIndexRef.set(currentListIndexRef.get() + 1) }
+            val prevListButton =
+                WButton(Text.of { "<" }).setOnClick { currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0)) }
+            add(prevListButton, 0, 5)
+            add(nextListButton, 1, 5)
+
             // Инвентарь игрока
-            add(gui.createPlayerInventoryPanel(), 0, 5)
+            add(gui.createPlayerInventoryPanel(), 0, 7)
 
             validate(gui)
         }

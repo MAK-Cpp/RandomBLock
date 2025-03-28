@@ -7,7 +7,6 @@ import net.minecraft.block.Block
 import net.minecraft.block.ShapeContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
-import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.screen.ScreenHandlerContext
@@ -23,8 +22,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.isServer
-import ru.makcpp.randomblock.json.BlockItemWithProbability
-import ru.makcpp.randomblock.json.PlayerBlocksLists
+import ru.makcpp.randomblock.serialization.BlockItemWithProbability
+import ru.makcpp.randomblock.serialization.PlayerBlocksLists
 
 private typealias PlayersMap<T> = MutableMap<UUID, T>
 

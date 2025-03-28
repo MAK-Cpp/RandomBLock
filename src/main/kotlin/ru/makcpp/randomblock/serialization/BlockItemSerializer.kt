@@ -1,4 +1,4 @@
-package ru.makcpp.randomblock.json
+package ru.makcpp.randomblock.serialization
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

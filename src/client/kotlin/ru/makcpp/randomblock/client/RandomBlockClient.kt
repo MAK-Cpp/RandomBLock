@@ -18,11 +18,11 @@ import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
-import ru.makcpp.randomblock.json.BlockItemWithProbability
+import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
-import ru.makcpp.randomblock.json.BlockItemWithProbabilityList
-import ru.makcpp.randomblock.json.PlayerBlocksLists
-import ru.makcpp.randomblock.json.PlayerList
+import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
+import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import ru.makcpp.randomblock.serialization.PlayerList
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
@@ -38,7 +38,7 @@ class RandomBlockClient : ClientModInitializer {
             currentListNumber = 0,
             lists = mutableListOf(
                 BlockItemWithProbabilityList(
-                    name = "new list",
+                    name = "new list 1",
                     blocksWithProbabilities = PlayerList { BlockItemWithProbability() }
                 )
             )

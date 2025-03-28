@@ -1,4 +1,4 @@
-package ru.makcpp.randomblock.json
+package ru.makcpp.randomblock.serialization
 
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
