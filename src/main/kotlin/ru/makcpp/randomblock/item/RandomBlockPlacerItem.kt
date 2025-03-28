@@ -3,18 +3,13 @@ package ru.makcpp.randomblock.item
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
-import net.minecraft.block.Block
-import net.minecraft.block.ShapeContext
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
-import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.sound.SoundCategory
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
-import net.minecraft.util.BlockRotation
 import net.minecraft.util.Hand
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
@@ -57,33 +52,12 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     fun playerLists(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.getNotNull(playerUUID)
 
-    private fun ItemUsageContext.tryPlaceBlock(block: Block): ActionResult {
-        LOGGER.debug("Placing random item {}", block)
-        val placeContext = ItemPlacementContext(this)
-        val pos = placeContext.blockPos
-
-        if (world.canPlace(block.defaultState, pos, ShapeContext.absent())) {
-            if (world.isServer()) {
-                var state = block.defaultState
-                for (i in 0 until 4) {
-                    if (DIRECTIONS[i] == horizontalPlayerFacing) {
-                        break
-                    }
-                    state = state.rotate(BlockRotation.CLOCKWISE_90)
-                }
-                world.setBlockState(pos, state)
-                val sound = block.defaultState.soundGroup.placeSound
-                world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, 1.0F)
-            }
-
-            LOGGER.debug("Success")
-
-            return ActionResult.SUCCESS
+    private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult {
+        return if (world.isServer()) {
+            blockItem.useOnBlock(this)
+        } else {
+            ActionResult.SUCCESS
         }
-
-        LOGGER.debug("Pass")
-
-        return ActionResult.PASS
     }
 
     fun List<BlockItemWithProbability>.getRandomBlockItem(): BlockItem? {
@@ -112,8 +86,8 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     ): ActionResult {
         LOGGER.debug("player is in creative")
 
-        val block = blockItemsWithProbabilities.getRandomBlockItem()?.block ?: return ActionResult.PASS
-        return tryPlaceBlock(block)
+        val blockItem = blockItemsWithProbabilities.getRandomBlockItem() ?: return ActionResult.PASS
+        return tryPlaceBlock(blockItem)
     }
 
     private fun ItemUsageContext.useOnBlock(
@@ -144,9 +118,8 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
         // 6) Найдем стек у игрока, который содержит наш случайный блок
         val playersItemStack = playersItemStacks.find { it.item == randomItem } ?: return ActionResult.PASS
-        val block = randomItem.block
 
-        return tryPlaceBlock(block).also {
+        return tryPlaceBlock(randomItem).also {
             // Если смогли поставить блок, то на стороне сервера уменьшим стак с этим блоком на один
             if (it == ActionResult.SUCCESS && world.isServer()) {
                 playersItemStack.decrement(1)
