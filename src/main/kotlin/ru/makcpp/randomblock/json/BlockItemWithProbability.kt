@@ -10,10 +10,10 @@ data class BlockItemWithProbability(
     @Serializable(with = BlockItemSerializer::class)
     @SerialName("block_item")
     @Required
-    val blockItem: BlockItem? = null,
+    var blockItem: BlockItem? = null,
 
     @Serializable
     @SerialName("probability")
     @Required
-    val probability: Int = 0
+    var probability: Int = 0
 )

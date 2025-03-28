@@ -6,8 +6,8 @@ import kotlin.collections.set
 import net.minecraft.block.Block
 import net.minecraft.block.ShapeContext
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.inventory.Inventory
 import net.minecraft.item.BlockItem
+import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.screen.ScreenHandlerContext
@@ -22,9 +22,9 @@ import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
-import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.isServer
 import ru.makcpp.randomblock.json.BlockItemWithProbability
+import ru.makcpp.randomblock.json.PlayerBlocksLists
 
 private typealias PlayersMap<T> = MutableMap<UUID, T>
 
@@ -48,24 +48,15 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         private val DIRECTIONS = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
     }
 
-    private val playersBlockItems: PlayersMap<MutableList<BlockItem?>> = ConcurrentHashMap()
-    private val playersProbabilities: PlayersMap<MutableList<Int>> = ConcurrentHashMap()
+    private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = ConcurrentHashMap()
 
-    fun joinPlayersData(blockItems: List<BlockItem?>, probabilities: List<Int>): List<BlockItemWithProbability> =
-        blockItems.mapIndexed { i, item -> BlockItemWithProbability(item, probabilities[i]) }
-
-    fun joinPlayer(playerUUID: UUID, blockItems: List<BlockItemWithProbability>) {
-        playersBlockItems[playerUUID] = blockItems.map { it.blockItem }.toMutableList()
-        playersProbabilities[playerUUID] = blockItems.map { it.probability }.toMutableList()
+    fun joinPlayer(playerUUID: UUID, blockItems: PlayerBlocksLists) {
+        playersListsOfBlocks[playerUUID] = blockItems
     }
 
-    fun disconnectPlayer(playerUUID: UUID): List<BlockItemWithProbability> =
-        joinPlayersData(playersBlockItems.removeNotNull(playerUUID), playersProbabilities.removeNotNull(playerUUID))
+    fun disconnectPlayer(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.removeNotNull(playerUUID)
 
-    fun playersBlockItemsAsInventory(playerUUID: UUID): Inventory =
-        InventoryFromList(playersBlockItems.getNotNull(playerUUID))
-
-    fun playersProbabilities(playerUUID: UUID): MutableList<Int> = playersProbabilities.getNotNull(playerUUID)
+    fun playerLists(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.getNotNull(playerUUID)
 
     private fun ItemUsageContext.tryPlaceBlock(block: Block): ActionResult {
         LOGGER.debug("Placing random item {}", block)
@@ -142,7 +133,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
             return ActionResult.PASS
         }
         // 3) Узнаем, а какие вообще уникальные предметы есть у игрока
-        val playerItems = playersItemStacks.mapNotNull { it.item }.toSet()
+        val playerItems = playersItemStacks.mapNotNull { it.item as BlockItem }.toSet()
 
         // 4) Из всех блоков с их вероятностями оставим только те, которые присутствуют у игрока
         //    В будущем добавить вариант, что если игрок не содержит хотя бы 1 из предметов, то ничего не ставится
@@ -167,16 +158,13 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         val player = context.player ?: return ActionResult.PASS
 
-        val playerBlockItems: List<BlockItem?> = playersBlockItems[player.uuid] ?: return ActionResult.PASS
-        val playerProbabilities: List<Int> = playersProbabilities[player.uuid] ?: return ActionResult.PASS
-
-        val playerData = joinPlayersData(playerBlockItems, playerProbabilities)
+        val playerCurrentBlocksList = playerLists(player.uuid).currentList.blocksWithProbabilities
 
         LOGGER.debug("starting placing random block")
 
         return with(context) {
-            if (player.isCreative) useOnBlockInCreative(playerData)
-            else useOnBlock(player, playerData)
+            if (player.isCreative) useOnBlockInCreative(playerCurrentBlocksList)
+            else useOnBlock(player, playerCurrentBlocksList)
         }
     }
 

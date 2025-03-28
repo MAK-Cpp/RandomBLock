@@ -2,13 +2,10 @@ package ru.makcpp.randomblock.gui.widget
 
 import io.github.cottonmc.cotton.gui.widget.WTextField
 import net.minecraft.text.Text
+import ru.makcpp.randomblock.util.MutableValue
 
-data class MutableValueReference<T>(
-    val get: () -> T,
-    val set: (T) -> Unit
-)
 
-class WIntField(private val valueRef: MutableValueReference<Int>) : WTextField() {
+class WIntField(private val valueRef: MutableValue<Int>) : WTextField() {
 
     init {
         width = 32

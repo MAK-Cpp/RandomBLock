@@ -20,6 +20,9 @@ import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.json.BlockItemWithProbability
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
+import ru.makcpp.randomblock.json.BlockItemWithProbabilityList
+import ru.makcpp.randomblock.json.PlayerBlocksLists
+import ru.makcpp.randomblock.json.PlayerList
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
@@ -30,6 +33,16 @@ class RandomBlockClient : ClientModInitializer {
             prettyPrint = true
             prettyPrintIndent = "  "
         }
+
+        val DEFAULT_CONFIG_FILE_CONTENT = PlayerBlocksLists(
+            currentListNumber = 0,
+            lists = mutableListOf(
+                BlockItemWithProbabilityList(
+                    name = "new list",
+                    blocksWithProbabilities = PlayerList { BlockItemWithProbability() }
+                )
+            )
+        )
     }
 
     private val configFilePath: Path =
@@ -56,16 +69,22 @@ class RandomBlockClient : ClientModInitializer {
     private fun loadConfig(playerUUID: UUID) {
         LOGGER.debug("loading config for player with uuid {}", playerUUID)
 
-        val blockItems: List<BlockItemWithProbability> = if (configFilePath.notExists()) {
+        val blockItems: PlayerBlocksLists = if (configFilePath.notExists()) {
             LOGGER.debug("there is no config file, creating new one.")
 
             configFilePath.parent.createDirectories()
             configFilePath.createFile()
 
-            List(9) { BlockItemWithProbability() }
+            DEFAULT_CONFIG_FILE_CONTENT
         } else {
             val config = configFilePath.readText()
-            PRETTY_JSON.decodeFromString<List<BlockItemWithProbability>>(config)
+            try {
+                PRETTY_JSON.decodeFromString<PlayerBlocksLists>(config)
+            } catch (e: Exception) {
+                LOGGER.error("Error while loading config file", e)
+                LOGGER.debug("Replacing config with default content")
+                DEFAULT_CONFIG_FILE_CONTENT
+            }
         }
 
         LOGGER.debug("config file loaded: {}", configFilePath)
@@ -77,6 +96,6 @@ class RandomBlockClient : ClientModInitializer {
         LOGGER.debug("saving config for player with uuid {}", playerUUID)
 
         val blockItems = RANDOM_BLOCK_PLACER_ITEM.disconnectPlayer(playerUUID)
-        configFilePath.writeText(PRETTY_JSON.encodeToString<List<BlockItemWithProbability>>(blockItems))
+        configFilePath.writeText(PRETTY_JSON.encodeToString<PlayerBlocksLists>(blockItems))
     }
 }

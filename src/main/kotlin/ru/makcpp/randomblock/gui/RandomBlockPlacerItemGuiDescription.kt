@@ -13,11 +13,12 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.ClickType
-import ru.makcpp.randomblock.gui.widget.MutableValueReference
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 import ru.makcpp.randomblock.item.id
+import ru.makcpp.randomblock.json.PlayerList
+import ru.makcpp.randomblock.util.MutableValue
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ScreenHandlerType<RandomBlockPlacerItemGuiDescription> = Registry.register(
     Registries.SCREEN_HANDLER,
@@ -48,17 +49,22 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             setInsets(Insets.ROOT_PANEL)
             val uuid = inventory.player.uuid
 
+            // TODO: пока что нет переключения между листами, достали только текущий лист, научиться переключать их
+
+            // Текущий лист
+            val playerList = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid).currentList
+
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
-            val blockItemsInventory = RANDOM_BLOCK_PLACER_ITEM.playersBlockItemsAsInventory(uuid)
+            val blockItemsInventory = InventoryFromList(playerList.blocks)
             val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
             add(blocksSet, 0, 1)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
-            val probabilities: MutableList<Int> = RANDOM_BLOCK_PLACER_ITEM.playersProbabilities(uuid)
+            val probabilities: PlayerList<MutableValue<Int>> = playerList.probabilities
             repeat(3) { i ->
                 repeat(3) { j ->
                     val id = i * 3 + j
-                    val intField = WIntField(MutableValueReference({ probabilities[id] }, { probabilities[id] = it }))
+                    val intField = WIntField(probabilities[id])
                     add(intField, 3 + j * 2, 1 + i)
                 }
             }
