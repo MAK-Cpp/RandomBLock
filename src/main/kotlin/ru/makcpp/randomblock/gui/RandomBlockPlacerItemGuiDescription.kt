@@ -61,37 +61,7 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             val playerLists = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid)
             val playerListRef = ValueRef<BlockItemWithProbabilityList> { playerLists.currentList }
             val currentListIndexRef =
-                MutableValueRef<Int>({ playerLists.currentListNumber }, {
-                    require(it >= 0) { "Cannot set negate value" }
-                    if (it > playerLists.currentListNumber) {
-                        /**
-                         * Если новый номер больше старого, то новое значение либо меньше кол-ва страниц, либо нет
-                         *
-                         * Если нет, то добавим недостающие страницы, и тогда currentListNumber будет смотреть на
-                         * последнюю страницу
-                         */
-                        for (i in playerLists.lists.size..it) {
-                            playerLists.lists.add(
-                                BlockItemWithProbabilityList(
-                                    name = "new list ${i + 1}",
-                                    blocksWithProbabilities = PlayerList { BlockItemWithProbability() }
-                                )
-                            )
-                        }
-                        playerLists.currentListNumber = it
-                    } else {
-                        /**
-                         * Иначе, убираем все крайние, которые пустые
-                         */
-                        playerLists.currentListNumber = it
-                        for (i in playerLists.lists.size - 1 downTo it + 1) {
-                            if (!playerLists.lists.last().isEmpty) {
-                                break
-                            }
-                            playerLists.lists.removeLast()
-                        }
-                    }
-                })
+                MutableValueRef<Int>({ playerLists.currentListNumber }, { playerLists.currentListNumber = it })
 
             // Название текущего списка (в будущем добавить изменение)
             val label = WDynamicLabel { playerListRef.get().name }
@@ -118,8 +88,10 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
                 }
             }
 
+            // Следующая страница
             val nextListButton =
                 WButton(Text.of { ">" }).setOnClick { currentListIndexRef.set(currentListIndexRef.get() + 1) }
+            // Предыдущая страница
             val prevListButton =
                 WButton(Text.of { "<" }).setOnClick { currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0)) }
             add(prevListButton, 0, 5)
