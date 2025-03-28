@@ -4,7 +4,7 @@ import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.minecraft.item.BlockItem
-import ru.makcpp.randomblock.util.MutableValue
+import ru.makcpp.randomblock.util.MutableValueRef
 
 @Serializable
 class PlayerList<T> private constructor(private val list: MutableList<T>) : MutableList<T> by list {
@@ -29,17 +29,17 @@ data class BlockItemWithProbabilityList(
     @SerialName("blocks")
     val blocksWithProbabilities: PlayerList<BlockItemWithProbability>,
 ) {
-    val blocks: PlayerList<MutableValue<BlockItem?>>
+    val blocks: PlayerList<MutableValueRef<BlockItem?>>
         get() = PlayerList.Companion(blocksWithProbabilities.map { blockWithProb ->
-            MutableValue(
+            MutableValueRef(
                 { blockWithProb.blockItem },
                 { blockWithProb.blockItem = it }
             )
         })
 
-    val probabilities: PlayerList<MutableValue<Int>>
+    val probabilities: PlayerList<MutableValueRef<Int>>
         get() = PlayerList.Companion(blocksWithProbabilities.map { blockWithProb ->
-            MutableValue(
+            MutableValueRef(
                 { blockWithProb.probability },
                 { blockWithProb.probability = it }
             )

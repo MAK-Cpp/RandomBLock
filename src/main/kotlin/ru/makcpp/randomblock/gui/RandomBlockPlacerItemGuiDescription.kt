@@ -17,8 +17,10 @@ import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 import ru.makcpp.randomblock.item.id
+import ru.makcpp.randomblock.json.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.json.PlayerList
-import ru.makcpp.randomblock.util.MutableValue
+import ru.makcpp.randomblock.util.MutableValueRef
+import ru.makcpp.randomblock.util.ValueRef
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ScreenHandlerType<RandomBlockPlacerItemGuiDescription> = Registry.register(
     Registries.SCREEN_HANDLER,
@@ -52,15 +54,24 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             // TODO: пока что нет переключения между листами, достали только текущий лист, научиться переключать их
 
             // Текущий лист
-            val playerList = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid).currentList
+            val playerLists = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid)
+            val playerListRef = ValueRef<BlockItemWithProbabilityList> { playerLists.currentList }
+            val currentListIndexRef =
+                MutableValueRef<Int>({ playerLists.currentListNumber }, { playerLists.currentListNumber = it })
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
-            val blockItemsInventory = InventoryFromList(playerList.blocks)
+            val blockItemsInventory = InventoryFromList(playerListRef)
             val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
             add(blocksSet, 0, 1)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
-            val probabilities: PlayerList<MutableValue<Int>> = playerList.probabilities
+            val probabilities: PlayerList<MutableValueRef<Int>> =
+                PlayerList { i ->
+                    MutableValueRef(
+                        { playerListRef.get().blocksWithProbabilities[i].probability },
+                        { playerListRef.get().blocksWithProbabilities[i].probability = it },
+                    )
+                }
             repeat(3) { i ->
                 repeat(3) { j ->
                     val id = i * 3 + j

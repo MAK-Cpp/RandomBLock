@@ -6,16 +6,24 @@ import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import ru.makcpp.randomblock.json.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.json.PlayerList
-import ru.makcpp.randomblock.util.MutableValue
+import ru.makcpp.randomblock.util.MutableValueRef
+import ru.makcpp.randomblock.util.ValueRef
 
-class InventoryFromList(val blockItems: PlayerList<MutableValue<BlockItem?>>) : Inventory {
+class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbabilityList>) : Inventory {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(InventoryFromList::class.java)
     }
 
-    private val blockItemsAsStacks =
-        blockItems.map { if (it.get() != null) ItemStack(it.get()) else ItemStack.EMPTY }.toMutableList()
+    private val blockItems
+        get() = currentListRef.get().blocks
+
+    private val blockItemsAsStacks
+        get() = blockItems
+            .map { if (it.get() != null) ItemStack(it.get()) else ItemStack.EMPTY }
+            .toMutableList()
+
 
     override fun size(): Int = blockItems.size
 
