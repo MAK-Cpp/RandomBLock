@@ -35,7 +35,7 @@ class RandomBlockClient : ClientModInitializer {
         }
 
         val DEFAULT_CONFIG_FILE_CONTENT = PlayerBlocksLists(
-            currentListNumber = 0,
+            number = 0,
             lists = mutableListOf(
                 BlockItemWithProbabilityList(
                     name = "new list 1",
