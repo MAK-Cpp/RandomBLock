@@ -125,8 +125,9 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
                     if (!slotItemStack.isEmpty) {
                         slotItemStack.decrement(slotItemStack.count)
                     }
+                    val currentCount = cursorItemStack.count
                     slot.insertStack(cursorItemStack, 1)
-                    cursorItemStack.increment(1)
+                    cursorItemStack.count = currentCount
 
                     slot.markDirty()
                 }
