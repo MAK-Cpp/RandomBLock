@@ -98,12 +98,7 @@ class RandomBlockPlacerItemGuiDescription(
         }
     }
 
-    override fun onSlotClick(
-        slotIndex: Int,
-        button: Int,
-        actionType: SlotActionType,
-        player: PlayerEntity,
-    ) {
+    override fun onSlotClick(slotIndex: Int, button: Int, actionType: SlotActionType, player: PlayerEntity) {
         if (slotIndex in 0 until 9 &&
             this.slots[slotIndex].inventory is InventoryFromList &&
             !this.cursorStack.isEmpty

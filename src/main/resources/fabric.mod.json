@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "id": "randomblock",
   "version": "${version}",
-
   "name": "RandomBlock",
   "description": "Tool for random placing blocks from some set",
   "authors": [
@@ -11,10 +10,8 @@
   "contact": {
     "email": "spartmenik@gmail.com"
   },
-
   "license": "MIT",
   "icon": "assets/randomblock/icon.png",
-
   "environment": "client",
   "entrypoints": {
     "client": [
@@ -24,15 +21,13 @@
       "ru.makcpp.randomblock.RandomBlock"
     ]
   },
-
   "mixins": [
-    "randomblock.mixins.json"
-    ,{
+    "randomblock.mixins.json",
+    {
       "config": "randomblock.client.mixins.json",
       "environment": "client"
     }
   ],
-
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-language-kotlin": ">=${kotlin_loader_version}",

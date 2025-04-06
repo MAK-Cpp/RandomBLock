@@ -1,8 +1,6 @@
 package ru.makcpp.randomblock.util
 
-open class ValueRef<T>(
-    private val getFunction: () -> T,
-) {
+open class ValueRef<T>(private val getFunction: () -> T) {
     fun get(): T = getFunction()
 }
 
@@ -11,10 +9,7 @@ open class ValueRef<T>(
  *
  * Обязательное условие состоит в том, что `\forall x: if set(x) then get() = x`
  */
-class MutableValueRef<T>(
-    getFunction: () -> T,
-    private val setFunction: (T) -> Unit,
-) : ValueRef<T>(getFunction) {
+class MutableValueRef<T>(getFunction: () -> T, private val setFunction: (T) -> Unit) : ValueRef<T>(getFunction) {
     @Synchronized
     fun set(value: T) {
         setFunction(value)

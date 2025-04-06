@@ -14,10 +14,7 @@ object BlockItemSerializer : KSerializer<BlockItem?> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("net.minecraft.item.BlockItem", PrimitiveKind.STRING)
 
-    override fun serialize(
-        encoder: Encoder,
-        value: BlockItem?,
-    ) {
+    override fun serialize(encoder: Encoder, value: BlockItem?) {
         if (value == null) {
             encoder.encodeString("null")
         } else {

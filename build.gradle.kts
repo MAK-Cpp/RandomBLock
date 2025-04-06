@@ -1,12 +1,13 @@
-import java.net.URI
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 plugins {
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.serialization") version "2.1.0"
     id("fabric-loom") version "1.10-SNAPSHOT"
     id("maven-publish")
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
 version = project.property("mod_version") as String
@@ -14,6 +15,12 @@ group = project.property("maven_group") as String
 
 base {
     archivesName.set(project.property("archives_base_name") as String)
+}
+
+detekt {
+    toolVersion = "1.23.8"
+    config.setFrom(file("detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 val targetJavaVersion = 21
@@ -63,6 +70,8 @@ dependencies {
     // https://github.com/CottonMC/LibGui
     modImplementation("io.github.cottonmc:LibGui:13.0.0+1.21.5")
     include("io.github.cottonmc:LibGui:13.0.0+1.21.5")
+
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 }
 
 tasks.processResources {
@@ -76,7 +85,7 @@ tasks.processResources {
             "version" to project.version,
             "minecraft_version" to project.property("minecraft_version"),
             "loader_version" to project.property("loader_version"),
-            "kotlin_loader_version" to project.property("kotlin_loader_version")
+            "kotlin_loader_version" to project.property("kotlin_loader_version"),
         )
     }
 }

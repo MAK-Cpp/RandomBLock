@@ -14,13 +14,8 @@ class OpenGuiPayload : CustomPayload {
             PacketCodec.of(
                 { value, buf -> buf.writeIdentifier(PACKET_ID) },
                 { buf ->
-                    if (buf.readIdentifier() ==
-                        PACKET_ID
-                    ) {
-                        OpenGuiPayload()
-                    } else {
-                        throw IllegalArgumentException("Invalid ID received")
-                    }
+                    require(buf.readIdentifier() == PACKET_ID) { "Invalid ID received" }
+                    OpenGuiPayload()
                 },
             )
     }

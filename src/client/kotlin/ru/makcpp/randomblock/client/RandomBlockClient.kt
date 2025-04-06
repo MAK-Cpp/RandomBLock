@@ -1,6 +1,7 @@
 package ru.makcpp.randomblock.client
 
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
@@ -70,7 +71,7 @@ class RandomBlockClient : ClientModInitializer {
             val config = CONFIG_FILE_PATH.readText()
             try {
                 PRETTY_JSON.decodeFromString<PlayerBlocksLists>(config)
-            } catch (e: Exception) {
+            } catch (e: SerializationException) {
                 LOGGER.error("Error while loading config file", e)
                 LOGGER.debug("Replacing config with default content")
                 DEFAULT_CONFIG_FILE_CONTENT

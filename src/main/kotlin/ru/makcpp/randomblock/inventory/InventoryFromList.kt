@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.util.ValueRef
 
-class InventoryFromList(
-    private val currentListRef: ValueRef<BlockItemWithProbabilityList>,
-) : Inventory {
+class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbabilityList>) : Inventory {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(InventoryFromList::class.java)
     }
@@ -34,10 +32,7 @@ class InventoryFromList(
         return blockItemsAsStacks[slot]
     }
 
-    override fun removeStack(
-        slot: Int,
-        amount: Int,
-    ): ItemStack = removeStack(slot)
+    override fun removeStack(slot: Int, amount: Int): ItemStack = removeStack(slot)
 
     override fun removeStack(slot: Int): ItemStack {
         LOGGER.debug("Removing $slot")
@@ -47,10 +42,7 @@ class InventoryFromList(
         return ItemStack.EMPTY
     }
 
-    override fun setStack(
-        slot: Int,
-        stack: ItemStack,
-    ) {
+    override fun setStack(slot: Int, stack: ItemStack) {
         LOGGER.debug("Set stack $slot")
         val blockItem = stack.item as? BlockItem ?: return
         blockItems[slot].set(blockItem)
@@ -58,6 +50,7 @@ class InventoryFromList(
     }
 
     override fun markDirty() {
+        return
     }
 
     override fun canPlayerUse(player: PlayerEntity): Boolean = true

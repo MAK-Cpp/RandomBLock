@@ -4,7 +4,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.util.ActionResult
-import net.minecraft.util.math.Direction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.isServer
@@ -16,13 +15,9 @@ import kotlin.collections.set
 
 private typealias PlayersMap<T> = MutableMap<UUID, T>
 
-private fun <T> PlayersMap<T>.notNull(
-    playerUUID: UUID,
-    func: (UUID) -> T?,
-): T =
-    requireNotNull(func(playerUUID)) {
-        "Player $playerUUID not found"
-    }
+private fun <T> PlayersMap<T>.notNull(playerUUID: UUID, func: (UUID) -> T?): T = requireNotNull(func(playerUUID)) {
+    "Player $playerUUID not found"
+}
 
 private fun <T> PlayersMap<T>.getNotNull(playerUUID: UUID): T = notNull(playerUUID, ::get)
 
@@ -33,21 +28,14 @@ private fun <T> PlayersMap<T>.removeNotNull(playerUUID: UUID): T = notNull(playe
  *
  * Позволяет установить случайный блок из набора
  */
-class RandomBlockPlacerItem(
-    settings: Settings,
-) : ModItem(settings) {
+class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
-
-        private val DIRECTIONS = listOf(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)
     }
 
     private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = ConcurrentHashMap()
 
-    fun joinPlayer(
-        playerUUID: UUID,
-        blockItems: PlayerBlocksLists,
-    ) {
+    fun joinPlayer(playerUUID: UUID, blockItems: PlayerBlocksLists) {
         LOGGER.info("Joining player $playerUUID")
         playersListsOfBlocks[playerUUID] = blockItems
     }
@@ -59,19 +47,15 @@ class RandomBlockPlacerItem(
 
     fun playerLists(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.getNotNull(playerUUID)
 
-    fun updatePlayerLists(
-        playerUUID: UUID,
-        blockItems: PlayerBlocksLists,
-    ) {
+    fun updatePlayerLists(playerUUID: UUID, blockItems: PlayerBlocksLists) {
         playersListsOfBlocks[playerUUID] = blockItems
     }
 
-    private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult =
-        if (world.isServer()) {
-            blockItem.useOnBlock(this)
-        } else {
-            ActionResult.SUCCESS
-        }
+    private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult = if (world.isServer()) {
+        blockItem.useOnBlock(this)
+    } else {
+        ActionResult.SUCCESS
+    }
 
     fun List<BlockItemWithProbability>.getRandomBlockItem(): BlockItem? {
         // Оставим только те сущности, где есть и блок, и вероятность
@@ -93,7 +77,9 @@ class RandomBlockPlacerItem(
         throw IllegalStateException("No probabilities found")
     }
 
-    private fun ItemUsageContext.useOnBlockInCreative(blockItemsWithProbabilities: List<BlockItemWithProbability>): ActionResult {
+    private fun ItemUsageContext.useOnBlockInCreative(
+        blockItemsWithProbabilities: List<BlockItemWithProbability>,
+    ): ActionResult {
         LOGGER.debug("player is in creative")
 
         val blockItem = blockItemsWithProbabilities.getRandomBlockItem() ?: return ActionResult.PASS

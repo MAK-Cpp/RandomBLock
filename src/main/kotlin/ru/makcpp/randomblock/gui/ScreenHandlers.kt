@@ -14,7 +14,8 @@ import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 import ru.makcpp.randomblock.item.id
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 
-val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ExtendedScreenHandlerType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
+val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
+    ExtendedScreenHandlerType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
     Registry.register(
         Registries.SCREEN_HANDLER,
         RANDOM_BLOCK_PLACER_ITEM.id,
@@ -38,11 +39,7 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY =
 
         override fun getDisplayName() = Text.translatable("item.randomblock.random_block_placer_item")
 
-        override fun createMenu(
-            syncId: Int,
-            playerInventory: PlayerInventory,
-            player: PlayerEntity,
-        ): ScreenHandler =
+        override fun createMenu(syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity): ScreenHandler =
             RandomBlockPlacerItemGuiDescription(
                 syncId,
                 playerInventory,
