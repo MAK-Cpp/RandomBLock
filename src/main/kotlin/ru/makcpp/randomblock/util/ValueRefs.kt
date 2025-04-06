@@ -1,6 +1,5 @@
 package ru.makcpp.randomblock.util
 
-
 open class ValueRef<T>(
     private val getFunction: () -> T,
 ) {
@@ -15,8 +14,7 @@ open class ValueRef<T>(
 class MutableValueRef<T>(
     getFunction: () -> T,
     private val setFunction: (T) -> Unit,
-): ValueRef<T>(getFunction) {
-
+) : ValueRef<T>(getFunction) {
     @Synchronized
     fun set(value: T) {
         setFunction(value)

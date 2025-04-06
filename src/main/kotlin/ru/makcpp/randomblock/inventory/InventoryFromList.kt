@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.util.ValueRef
 
-class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbabilityList>) : Inventory {
+class InventoryFromList(
+    private val currentListRef: ValueRef<BlockItemWithProbabilityList>,
+) : Inventory {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(InventoryFromList::class.java)
     }
@@ -18,10 +20,10 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
         get() = currentListRef.get().blocks
 
     private val blockItemsAsStacks
-        get() = blockItems
-            .map { if (it.get() != null) ItemStack(it.get()) else ItemStack.EMPTY }
-            .toMutableList()
-
+        get() =
+            blockItems
+                .map { if (it.get() != null) ItemStack(it.get()) else ItemStack.EMPTY }
+                .toMutableList()
 
     override fun size(): Int = blockItems.size
 
@@ -32,7 +34,10 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
         return blockItemsAsStacks[slot]
     }
 
-    override fun removeStack(slot: Int, amount: Int): ItemStack = removeStack(slot)
+    override fun removeStack(
+        slot: Int,
+        amount: Int,
+    ): ItemStack = removeStack(slot)
 
     override fun removeStack(slot: Int): ItemStack {
         LOGGER.debug("Removing $slot")
@@ -42,7 +47,10 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
         return ItemStack.EMPTY
     }
 
-    override fun setStack(slot: Int, stack: ItemStack) {
+    override fun setStack(
+        slot: Int,
+        stack: ItemStack,
+    ) {
         LOGGER.debug("Set stack $slot")
         val blockItem = stack.item as? BlockItem ?: return
         blockItems[slot].set(blockItem)

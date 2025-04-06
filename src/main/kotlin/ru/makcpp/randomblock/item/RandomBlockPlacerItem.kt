@@ -1,30 +1,28 @@
 package ru.makcpp.randomblock.item
 
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.set
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemUsageContext
-import net.minecraft.screen.ScreenHandlerContext
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
 import net.minecraft.util.math.Direction
-import net.minecraft.world.World
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.isServer
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.set
 
 private typealias PlayersMap<T> = MutableMap<UUID, T>
 
-private fun <T> PlayersMap<T>.notNull(playerUUID: UUID, func: (UUID) -> T?): T = requireNotNull(func(playerUUID)) {
-    "Player $playerUUID not found"
-}
+private fun <T> PlayersMap<T>.notNull(
+    playerUUID: UUID,
+    func: (UUID) -> T?,
+): T =
+    requireNotNull(func(playerUUID)) {
+        "Player $playerUUID not found"
+    }
 
 private fun <T> PlayersMap<T>.getNotNull(playerUUID: UUID): T = notNull(playerUUID, ::get)
 
@@ -35,7 +33,9 @@ private fun <T> PlayersMap<T>.removeNotNull(playerUUID: UUID): T = notNull(playe
  *
  * Позволяет установить случайный блок из набора
  */
-class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
+class RandomBlockPlacerItem(
+    settings: Settings,
+) : ModItem(settings) {
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
 
@@ -44,21 +44,34 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = ConcurrentHashMap()
 
-    fun joinPlayer(playerUUID: UUID, blockItems: PlayerBlocksLists) {
+    fun joinPlayer(
+        playerUUID: UUID,
+        blockItems: PlayerBlocksLists,
+    ) {
+        LOGGER.info("Joining player $playerUUID")
         playersListsOfBlocks[playerUUID] = blockItems
     }
 
-    fun disconnectPlayer(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.removeNotNull(playerUUID)
+    fun disconnectPlayer(playerUUID: UUID): PlayerBlocksLists {
+        LOGGER.info("Disconnecting player $playerUUID")
+        return playersListsOfBlocks.removeNotNull(playerUUID)
+    }
 
     fun playerLists(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.getNotNull(playerUUID)
 
-    private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult {
-        return if (world.isServer()) {
+    fun updatePlayerLists(
+        playerUUID: UUID,
+        blockItems: PlayerBlocksLists,
+    ) {
+        playersListsOfBlocks[playerUUID] = blockItems
+    }
+
+    private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult =
+        if (world.isServer()) {
             blockItem.useOnBlock(this)
         } else {
             ActionResult.SUCCESS
         }
-    }
 
     fun List<BlockItemWithProbability>.getRandomBlockItem(): BlockItem? {
         // Оставим только те сущности, где есть и блок, и вероятность
@@ -80,10 +93,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         throw IllegalStateException("No probabilities found")
     }
 
-
-    private fun ItemUsageContext.useOnBlockInCreative(
-        blockItemsWithProbabilities: List<BlockItemWithProbability>
-    ): ActionResult {
+    private fun ItemUsageContext.useOnBlockInCreative(blockItemsWithProbabilities: List<BlockItemWithProbability>): ActionResult {
         LOGGER.debug("player is in creative")
 
         val blockItem = blockItemsWithProbabilities.getRandomBlockItem() ?: return ActionResult.PASS
@@ -92,7 +102,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     private fun ItemUsageContext.useOnBlock(
         player: PlayerEntity,
-        blockItemsWithProbabilities: List<BlockItemWithProbability>
+        blockItemsWithProbabilities: List<BlockItemWithProbability>,
     ): ActionResult {
         LOGGER.debug("player isn't in creative")
 
@@ -128,6 +138,9 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
     }
 
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
+        if (context.world.isClient) {
+            return ActionResult.SUCCESS
+        }
         val player = context.player ?: return ActionResult.PASS
 
         val playerCurrentBlocksList = playerLists(player.uuid).currentList.blocksWithProbabilities
@@ -135,29 +148,11 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         LOGGER.debug("starting placing random block")
 
         return with(context) {
-            if (player.isCreative) useOnBlockInCreative(playerCurrentBlocksList)
-            else useOnBlock(player, playerCurrentBlocksList)
-        }
-    }
-
-    override fun use(world: World, user: PlayerEntity, hand: Hand): ActionResult {
-        if (user.isSneaking) {
-            if (world.isServer()) {
-                user.openHandledScreen(
-                    SimpleNamedScreenHandlerFactory(
-                        { syncId, playerInventory, player ->
-                            RandomBlockPlacerItemGuiDescription(
-                                syncId,
-                                playerInventory,
-                                ScreenHandlerContext.create(world, player.blockPos)
-                            )
-                        },
-                        Text.translatable("item.randomblock.random_block_placer_item")
-                    )
-                )
+            if (player.isCreative) {
+                useOnBlockInCreative(playerCurrentBlocksList)
+            } else {
+                useOnBlock(player, playerCurrentBlocksList)
             }
-            return ActionResult.SUCCESS
         }
-        return super.use(world, user, hand)
     }
 }

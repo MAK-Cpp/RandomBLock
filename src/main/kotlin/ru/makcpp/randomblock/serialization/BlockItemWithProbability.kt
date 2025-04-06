@@ -11,11 +11,10 @@ data class BlockItemWithProbability(
     @SerialName("block_item")
     @Required
     var blockItem: BlockItem? = null,
-
     @Serializable
     @SerialName("probability")
     @Required
-    var probability: Int = 0
+    var probability: Int = 0,
 ) {
     val isEmpty: Boolean
         get() = blockItem == null && probability == 0

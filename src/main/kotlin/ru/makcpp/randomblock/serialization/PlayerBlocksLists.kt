@@ -9,7 +9,6 @@ data class PlayerBlocksLists(
     @Required
     @SerialName("current_list_number")
     private var number: Int,
-
     @SerialName("lists")
     @Required
     val lists: MutableList<BlockItemWithProbabilityList>,
@@ -32,8 +31,8 @@ data class PlayerBlocksLists(
                     lists.add(
                         BlockItemWithProbabilityList(
                             name = "new list ${i + 1}",
-                            blocksWithProbabilities = PlayerList { BlockItemWithProbability() }
-                        )
+                            blocksWithProbabilities = PlayerList { BlockItemWithProbability() },
+                        ),
                     )
                 }
                 number = value

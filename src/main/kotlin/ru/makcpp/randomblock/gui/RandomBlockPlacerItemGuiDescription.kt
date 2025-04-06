@@ -5,45 +5,35 @@ import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WDynamicLabel
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItemSlot
-import io.github.cottonmc.cotton.gui.widget.WText
 import io.github.cottonmc.cotton.gui.widget.data.Insets
-import kotlin.math.max
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.resource.featuretoggle.FeatureFlags
 import net.minecraft.screen.ScreenHandlerContext
-import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.Text
 import net.minecraft.util.ClickType
+import ru.makcpp.randomblock.client.ClientProxy
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
-import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
-import ru.makcpp.randomblock.item.id
-import ru.makcpp.randomblock.serialization.BlockItemWithProbability
+import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
+import ru.makcpp.randomblock.serialization.PlayerBlocksLists
 import ru.makcpp.randomblock.serialization.PlayerList
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.ValueRef
+import kotlin.math.max
 
-val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER: ScreenHandlerType<RandomBlockPlacerItemGuiDescription> = Registry.register(
-    Registries.SCREEN_HANDLER,
-    RANDOM_BLOCK_PLACER_ITEM.id,
-    ScreenHandlerType(
-        { syncId, inventory -> RandomBlockPlacerItemGuiDescription(syncId, inventory, ScreenHandlerContext.EMPTY) },
-        FeatureFlags.VANILLA_FEATURES
-    )
-)
-
-class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventory, context: ScreenHandlerContext) :
-    SyncedGuiDescription(
+class RandomBlockPlacerItemGuiDescription(
+    syncId: Int,
+    inventory: PlayerInventory,
+    context: ScreenHandlerContext,
+    private val playerLists: PlayerBlocksLists,
+) : SyncedGuiDescription(
         RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
         syncId,
         inventory,
         getBlockInventory(context, INVENTORY_SIZE),
-        getBlockPropertyDelegate(context)
+        getBlockPropertyDelegate(context),
     ) {
     companion object {
         const val INVENTORY_SIZE = 1
@@ -55,10 +45,8 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
         with(root) {
             val gui = this@RandomBlockPlacerItemGuiDescription
             setInsets(Insets.ROOT_PANEL)
-            val uuid = inventory.player.uuid
 
             // Текущий лист
-            val playerLists = RANDOM_BLOCK_PLACER_ITEM.playerLists(uuid)
             val playerListRef = ValueRef<BlockItemWithProbabilityList> { playerLists.currentList }
             val currentListIndexRef =
                 MutableValueRef<Int>({ playerLists.currentListNumber }, { playerLists.currentListNumber = it })
@@ -89,15 +77,17 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
             }
 
             // Следующая страница
-            val nextListButton = WButton(Text.of { ">" }).setOnClick {
-                currentListIndexRef.set(currentListIndexRef.get() + 1)
-                intFields.forEach { it.update() }
-            }
+            val nextListButton =
+                WButton(Text.of { ">" }).setOnClick {
+                    currentListIndexRef.set(currentListIndexRef.get() + 1)
+                    intFields.forEach { it.update() }
+                }
             // Предыдущая страница
-            val prevListButton = WButton(Text.of { "<" }).setOnClick {
-                currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0))
-                intFields.forEach { it.update() }
-            }
+            val prevListButton =
+                WButton(Text.of { "<" }).setOnClick {
+                    currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0))
+                    intFields.forEach { it.update() }
+                }
             add(prevListButton, 0, 5)
             add(nextListButton, 1, 5)
 
@@ -108,11 +98,15 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
         }
     }
 
-    override fun onSlotClick(slotIndex: Int, button: Int, actionType: SlotActionType, player: PlayerEntity) {
-        println("${actionType.name} $slotIndex $button")
-        if (slotIndex in 0 until 9
-            && this.slots[slotIndex].inventory is InventoryFromList
-            && !this.cursorStack.isEmpty
+    override fun onSlotClick(
+        slotIndex: Int,
+        button: Int,
+        actionType: SlotActionType,
+        player: PlayerEntity,
+    ) {
+        if (slotIndex in 0 until 9 &&
+            this.slots[slotIndex].inventory is InventoryFromList &&
+            !this.cursorStack.isEmpty
         ) {
             val slot = this.slots[slotIndex]
             val slotItemStack = slot.stack
@@ -137,5 +131,13 @@ class RandomBlockPlacerItemGuiDescription(syncId: Int, inventory: PlayerInventor
         } else {
             super.onSlotClick(slotIndex, button, actionType, player)
         }
+    }
+
+    override fun onClosed(player: PlayerEntity) {
+        if (player.world.isClient) {
+            ClientProxy.sendToServer(PlayerBlocksListsPayload(playerLists))
+            ClientProxy.updateBlockListsInClient(playerLists)
+        }
+        super.onClosed(player)
     }
 }
