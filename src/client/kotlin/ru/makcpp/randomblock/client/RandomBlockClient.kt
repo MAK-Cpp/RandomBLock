@@ -20,7 +20,7 @@ import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.serialization.PlayerBlocksLists
 import ru.makcpp.randomblock.serialization.PlayerList
-import ru.makcpp.randomblock.util.MutableValueRef
+import ru.makcpp.randomblock.util.reference
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
@@ -111,7 +111,7 @@ class RandomBlockClient : ClientModInitializer {
                 ClientPlayNetworking.send(payload)
             }
 
-            blockItems = MutableValueRef(client::blockItems)
+            blockItems = client::blockItems.reference
         }
     }
 

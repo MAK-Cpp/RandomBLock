@@ -21,6 +21,7 @@ import ru.makcpp.randomblock.serialization.PlayerBlocksLists
 import ru.makcpp.randomblock.serialization.PlayerList
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.ValueRef
+import ru.makcpp.randomblock.util.reference
 import kotlin.math.max
 
 class RandomBlockPlacerItemGuiDescription(
@@ -48,7 +49,7 @@ class RandomBlockPlacerItemGuiDescription(
 
             // Текущий лист
             val playerListRef = ValueRef<BlockItemWithProbabilityList>(playerLists::currentList)
-            val currentListIndexRef = MutableValueRef<Int>(playerLists::currentListNumber)
+            val currentListIndexRef = playerLists::currentListNumber.reference
 
             // Название текущего списка (в будущем добавить изменение)
             val label = WDynamicLabel { playerListRef.get().name }
