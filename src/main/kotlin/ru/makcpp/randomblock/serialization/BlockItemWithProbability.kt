@@ -16,6 +16,9 @@ data class BlockItemWithProbability(
     @Required
     var probability: Int = 0,
 ) {
+    /**
+     * Пустой == бесполезный для использования, то есть либо блока нет, который ставить, либо вероятность этого блока 0
+     */
     val isEmpty: Boolean
-        get() = blockItem == null && probability == 0
+        get() = blockItem == null || probability == 0
 }

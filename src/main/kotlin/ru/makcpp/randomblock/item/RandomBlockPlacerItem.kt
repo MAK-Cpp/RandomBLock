@@ -9,19 +9,9 @@ import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.isServer
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import ru.makcpp.randomblock.util.PlayersMap
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
-
-private typealias PlayersMap<T> = MutableMap<UUID, T>
-
-private fun <T> PlayersMap<T>.notNull(playerUUID: UUID, func: (UUID) -> T?): T = requireNotNull(func(playerUUID)) {
-    "Player $playerUUID not found"
-}
-
-private fun <T> PlayersMap<T>.getNotNull(playerUUID: UUID): T = notNull(playerUUID, ::get)
-
-private fun <T> PlayersMap<T>.removeNotNull(playerUUID: UUID): T = notNull(playerUUID, ::remove)
 
 /**
  * Предмет для случайного выбора блока и установки его.
@@ -33,22 +23,17 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         private val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
     }
 
-    private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = ConcurrentHashMap()
+    private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = PlayersMap()
 
-    fun joinPlayer(playerUUID: UUID, blockItems: PlayerBlocksLists) {
-        LOGGER.info("Joining player $playerUUID")
-        playersListsOfBlocks[playerUUID] = blockItems
+    operator fun get(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks[playerUUID]
+
+    operator fun set(playerUUID: UUID, playerBlocksLists: PlayerBlocksLists) {
+        playersListsOfBlocks[playerUUID] = playerBlocksLists
     }
 
     fun disconnectPlayer(playerUUID: UUID): PlayerBlocksLists {
         LOGGER.info("Disconnecting player $playerUUID")
-        return playersListsOfBlocks.removeNotNull(playerUUID)
-    }
-
-    fun playerLists(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks.getNotNull(playerUUID)
-
-    fun updatePlayerLists(playerUUID: UUID, blockItems: PlayerBlocksLists) {
-        playersListsOfBlocks[playerUUID] = blockItems
+        return playersListsOfBlocks.remove(playerUUID)
     }
 
     private fun ItemUsageContext.tryPlaceBlock(blockItem: BlockItem): ActionResult = if (world.isServer()) {
@@ -59,7 +44,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
 
     fun List<BlockItemWithProbability>.getRandomBlockItem(): BlockItem? {
         // Оставим только те сущности, где есть и блок, и вероятность
-        val filteredList = filter { it.blockItem != null && it.probability != 0 }
+        val filteredList = filterNot { it.isEmpty }
 
         val totalProbability = filteredList.sumOf { it.probability }
         if (totalProbability <= 0) return null
@@ -129,7 +114,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         }
         val player = context.player ?: return ActionResult.PASS
 
-        val playerCurrentBlocksList = playerLists(player.uuid).currentList.blocksWithProbabilities
+        val playerCurrentBlocksList = get(player.uuid).currentList.blocksWithProbabilities
 
         LOGGER.debug("starting placing random block")
 

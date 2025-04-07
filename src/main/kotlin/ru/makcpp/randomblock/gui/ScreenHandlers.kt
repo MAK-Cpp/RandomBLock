@@ -35,7 +35,7 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY =
     object : ExtendedScreenHandlerFactory<PlayerBlocksListsPayload> {
         override fun getScreenOpeningData(player: ServerPlayerEntity): PlayerBlocksListsPayload =
-            PlayerBlocksListsPayload(RANDOM_BLOCK_PLACER_ITEM.playerLists(player.uuid))
+            PlayerBlocksListsPayload(RANDOM_BLOCK_PLACER_ITEM[player.uuid])
 
         override fun getDisplayName() = Text.translatable("item.randomblock.random_block_placer_item")
 
@@ -44,6 +44,6 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY =
                 syncId,
                 playerInventory,
                 ScreenHandlerContext.create(player.world, player.blockPos),
-                RANDOM_BLOCK_PLACER_ITEM.playerLists(player.uuid),
+                RANDOM_BLOCK_PLACER_ITEM[player.uuid],
             )
     }

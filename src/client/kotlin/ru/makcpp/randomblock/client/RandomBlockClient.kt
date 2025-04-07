@@ -20,6 +20,7 @@ import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
 import ru.makcpp.randomblock.serialization.PlayerBlocksLists
 import ru.makcpp.randomblock.serialization.PlayerList
+import ru.makcpp.randomblock.util.MutableValueRef
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
@@ -102,21 +103,23 @@ class RandomBlockClient : ClientModInitializer {
      * Настраиваем клиентские методы в common коде, которые там не доступны по умолчанию, например, [ClientPlayNetworking.send]
      */
     private fun configureClientProxy() {
-        ClientProxy.sendToServer = { payload ->
-            LOGGER.info("Sending to server: $payload")
-            ClientPlayNetworking.send(payload)
-        }
-        ClientProxy.updateBlockListsInClient = { playerBlocksLists ->
-            LOGGER.info("Updating player blocks lists")
-            blockItems = playerBlocksLists
+        val client = this
+
+        with(ClientProxy.INSTANCE!!) {
+            sendToServer = { payload ->
+                LOGGER.info("Sending to server: $payload")
+                ClientPlayNetworking.send(payload)
+            }
+
+            blockItems = MutableValueRef(client::blockItems)
         }
     }
 
     private fun loadConfig() {
-        ClientPlayNetworking.send(PlayerBlocksListsPayload(blockItems))
+        ClientPlayNetworking.send(PlayerBlocksListsPayload(this@RandomBlockClient.blockItems))
     }
 
     private fun saveConfig() {
-        CONFIG_FILE_PATH.writeText(PRETTY_JSON.encodeToString<PlayerBlocksLists>(blockItems))
+        CONFIG_FILE_PATH.writeText(PRETTY_JSON.encodeToString<PlayerBlocksLists>(this@RandomBlockClient.blockItems))
     }
 }

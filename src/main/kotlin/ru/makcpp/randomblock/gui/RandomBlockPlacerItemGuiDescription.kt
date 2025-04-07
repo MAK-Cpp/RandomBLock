@@ -47,9 +47,8 @@ class RandomBlockPlacerItemGuiDescription(
             setInsets(Insets.ROOT_PANEL)
 
             // Текущий лист
-            val playerListRef = ValueRef<BlockItemWithProbabilityList> { playerLists.currentList }
-            val currentListIndexRef =
-                MutableValueRef<Int>({ playerLists.currentListNumber }, { playerLists.currentListNumber = it })
+            val playerListRef = ValueRef<BlockItemWithProbabilityList>(playerLists::currentList)
+            val currentListIndexRef = MutableValueRef<Int>(playerLists::currentListNumber)
 
             // Название текущего списка (в будущем добавить изменение)
             val label = WDynamicLabel { playerListRef.get().name }
@@ -130,8 +129,13 @@ class RandomBlockPlacerItemGuiDescription(
 
     override fun onClosed(player: PlayerEntity) {
         if (player.world.isClient) {
-            ClientProxy.sendToServer(PlayerBlocksListsPayload(playerLists))
-            ClientProxy.updateBlockListsInClient(playerLists)
+            ClientProxy.INSTANCE?.let { client ->
+                println("Client proxy called in onClosed")
+                with(client) {
+                    sendToServer(PlayerBlocksListsPayload(playerLists))
+                    blockItems.set(playerLists)
+                }
+            }
         }
         super.onClosed(player)
     }

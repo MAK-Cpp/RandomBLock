@@ -15,7 +15,7 @@ fun registryServerNetwork() {
 
     ServerPlayNetworking.registerGlobalReceiver(PlayerBlocksListsPayload.ID) { payload, context ->
         context.server().execute {
-            RANDOM_BLOCK_PLACER_ITEM.joinPlayer(context.player().uuid, payload.playerBlocksLists)
+            RANDOM_BLOCK_PLACER_ITEM[context.player().uuid] = payload.playerBlocksLists
         }
     }
 }
