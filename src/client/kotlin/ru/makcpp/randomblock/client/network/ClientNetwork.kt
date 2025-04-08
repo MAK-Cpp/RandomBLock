@@ -6,6 +6,6 @@ import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 
 fun RandomBlockClient.registryClientNetwork() {
     ClientPlayNetworking.registerGlobalReceiver(PlayerBlocksListsPayload.ID) { payload, context ->
-        this@registryClientNetwork.blockItems = payload.playerBlocksLists
+        this@registryClientNetwork.playerPages = payload.playerPages
     }
 }

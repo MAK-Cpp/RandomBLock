@@ -25,7 +25,7 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
                     syncId,
                     inventory,
                     ScreenHandlerContext.EMPTY,
-                    data.playerBlocksLists,
+                    data.playerPages,
                 )
             },
             PlayerBlocksListsPayload.CODEC,

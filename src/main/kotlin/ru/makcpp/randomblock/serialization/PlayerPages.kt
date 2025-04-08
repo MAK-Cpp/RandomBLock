@@ -5,18 +5,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PlayerBlocksLists(
+data class PlayerPages(
     @Required
-    @SerialName("current_list_number")
+    @SerialName("current_page_number")
     private var number: Int,
-    @SerialName("lists")
+    @SerialName("pages")
     @Required
-    val lists: MutableList<BlockItemWithProbabilityList>,
+    val lists: MutableList<BlocksPage>,
 ) {
-    val currentList: BlockItemWithProbabilityList
+    val currentPage: BlocksPage
         get() = lists[number]
 
-    var currentListNumber: Int
+    var currentPageNumber: Int
         get() = number
         set(value) {
             require(value >= 0) { "Cannot set negate value" }
@@ -28,12 +28,7 @@ data class PlayerBlocksLists(
                  * последнюю страницу
                  */
                 for (i in lists.size..value) {
-                    lists.add(
-                        BlockItemWithProbabilityList(
-                            name = "new list ${i + 1}",
-                            blocksWithProbabilities = PlayerList { BlockItemWithProbability() },
-                        ),
-                    )
+                    lists.add(BlocksPage.newPage(i + 1))
                 }
                 number = value
             } else {

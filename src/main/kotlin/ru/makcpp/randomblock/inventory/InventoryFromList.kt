@@ -6,26 +6,26 @@ import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
+import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.util.ValueRef
 
-class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbabilityList>) : Inventory {
+class InventoryFromList(private val pageRef: ValueRef<BlocksPage>) : Inventory {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(InventoryFromList::class.java)
     }
 
     private val blockItems
-        get() = currentListRef.get().blocks
+        get() = pageRef.value.blocks
 
     private val blockItemsAsStacks
         get() =
             blockItems
-                .map { if (it.get() != null) ItemStack(it.get()) else ItemStack.EMPTY }
+                .map { if (it.value != null) ItemStack(it.value) else ItemStack.EMPTY }
                 .toMutableList()
 
     override fun size(): Int = blockItems.size
 
-    override fun isEmpty(): Boolean = blockItems.all { it.get() == null }
+    override fun isEmpty(): Boolean = blockItems.all { it.value == null }
 
     override fun getStack(slot: Int): ItemStack {
         LOGGER.debug("Get stack in slot $slot")
@@ -37,7 +37,7 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
     override fun removeStack(slot: Int): ItemStack {
         LOGGER.debug("Removing $slot")
         blockItemsAsStacks[slot] = ItemStack.EMPTY
-        blockItems[slot].set(null)
+        blockItems[slot].value = null
         // В этом инвентаре все предметы - фантомные, поэтому когда мы достаем стэк, он просто исчезает
         return ItemStack.EMPTY
     }
@@ -45,7 +45,7 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
     override fun setStack(slot: Int, stack: ItemStack) {
         LOGGER.debug("Set stack $slot")
         val blockItem = stack.item as? BlockItem ?: return
-        blockItems[slot].set(blockItem)
+        blockItems[slot].value = blockItem
         blockItemsAsStacks[slot] = ItemStack(blockItem)
     }
 
@@ -57,7 +57,7 @@ class InventoryFromList(private val currentListRef: ValueRef<BlockItemWithProbab
 
     override fun clear() {
         for (i in blockItems.indices) {
-            blockItems[i].set(null)
+            blockItems[i].value = null
             blockItemsAsStacks[i] = ItemStack.EMPTY
         }
     }

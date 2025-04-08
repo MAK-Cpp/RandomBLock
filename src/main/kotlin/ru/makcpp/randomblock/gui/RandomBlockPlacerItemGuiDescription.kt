@@ -16,9 +16,9 @@ import ru.makcpp.randomblock.client.ClientProxy
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
-import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
-import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.serialization.PlayerList
+import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.ValueRef
 import ru.makcpp.randomblock.util.reference
@@ -28,7 +28,7 @@ class RandomBlockPlacerItemGuiDescription(
     syncId: Int,
     inventory: PlayerInventory,
     context: ScreenHandlerContext,
-    private val playerLists: PlayerBlocksLists,
+    private val playerLists: PlayerPages,
 ) : SyncedGuiDescription(
         RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
         syncId,
@@ -48,11 +48,11 @@ class RandomBlockPlacerItemGuiDescription(
             setInsets(Insets.ROOT_PANEL)
 
             // Текущий лист
-            val playerListRef = ValueRef<BlockItemWithProbabilityList>(playerLists::currentList)
-            val currentListIndexRef = playerLists::currentListNumber.reference
+            val playerListRef: ValueRef<BlocksPage> = playerLists::currentPage.reference
+            val currentListIndexRef = playerLists::currentPageNumber.reference
 
             // Название текущего списка (в будущем добавить изменение)
-            val label = WDynamicLabel { playerListRef.get().name }
+            val label = WDynamicLabel { playerListRef.value.name }
             add(label, 0, 1)
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
@@ -64,8 +64,8 @@ class RandomBlockPlacerItemGuiDescription(
             val probabilities: PlayerList<MutableValueRef<Int>> =
                 PlayerList { i ->
                     MutableValueRef(
-                        { playerListRef.get().blocksWithProbabilities[i].probability },
-                        { playerListRef.get().blocksWithProbabilities[i].probability = it },
+                        { playerListRef.value.blocksWithProbabilities[i].probability },
+                        { playerListRef.value.blocksWithProbabilities[i].probability = it },
                     )
                 }
             val intFields = probabilities.map { WIntField(it) }
@@ -79,13 +79,13 @@ class RandomBlockPlacerItemGuiDescription(
             // Следующая страница
             val nextListButton =
                 WButton(Text.of { ">" }).setOnClick {
-                    currentListIndexRef.set(currentListIndexRef.get() + 1)
+                    currentListIndexRef.value++
                     intFields.forEach { it.update() }
                 }
             // Предыдущая страница
             val prevListButton =
                 WButton(Text.of { "<" }).setOnClick {
-                    currentListIndexRef.set(max(currentListIndexRef.get() - 1, 0))
+                    currentListIndexRef.value = max(currentListIndexRef.value - 1, 0)
                     intFields.forEach { it.update() }
                 }
             add(prevListButton, 0, 5)
@@ -130,12 +130,10 @@ class RandomBlockPlacerItemGuiDescription(
 
     override fun onClosed(player: PlayerEntity) {
         if (player.world.isClient) {
-            ClientProxy.INSTANCE?.let { client ->
-                println("Client proxy called in onClosed")
-                with(client) {
-                    sendToServer(PlayerBlocksListsPayload(playerLists))
-                    blockItems.set(playerLists)
-                }
+            println("Client proxy called in onClosed")
+            with(ClientProxy.INSTANCE!!) {
+                sendToServer(PlayerBlocksListsPayload(playerLists))
+                playerPagesRef.value = playerLists
             }
         }
         super.onClosed(player)

@@ -8,7 +8,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.isServer
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
-import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.PlayersMap
 import java.util.UUID
 import kotlin.collections.set
@@ -23,15 +23,15 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         private val LOGGER: Logger = LoggerFactory.getLogger(RandomBlockPlacerItem::class.java)
     }
 
-    private val playersListsOfBlocks: PlayersMap<PlayerBlocksLists> = PlayersMap()
+    private val playersListsOfBlocks: PlayersMap<PlayerPages> = PlayersMap()
 
-    operator fun get(playerUUID: UUID): PlayerBlocksLists = playersListsOfBlocks[playerUUID]
+    operator fun get(playerUUID: UUID): PlayerPages = playersListsOfBlocks[playerUUID]
 
-    operator fun set(playerUUID: UUID, playerBlocksLists: PlayerBlocksLists) {
-        playersListsOfBlocks[playerUUID] = playerBlocksLists
+    operator fun set(playerUUID: UUID, playerPages: PlayerPages) {
+        playersListsOfBlocks[playerUUID] = playerPages
     }
 
-    fun disconnectPlayer(playerUUID: UUID): PlayerBlocksLists {
+    fun disconnectPlayer(playerUUID: UUID): PlayerPages {
         LOGGER.info("Disconnecting player $playerUUID")
         return playersListsOfBlocks.remove(playerUUID)
     }
@@ -114,7 +114,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         }
         val player = context.player ?: return ActionResult.PASS
 
-        val playerCurrentBlocksList = get(player.uuid).currentList.blocksWithProbabilities
+        val playerCurrentBlocksList = get(player.uuid).currentPage.blocksWithProbabilities
 
         LOGGER.debug("starting placing random block")
 

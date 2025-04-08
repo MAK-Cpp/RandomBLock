@@ -16,10 +16,8 @@ import ru.makcpp.randomblock.client.network.registryClientNetwork
 import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
 import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
-import ru.makcpp.randomblock.serialization.BlockItemWithProbability
-import ru.makcpp.randomblock.serialization.BlockItemWithProbabilityList
-import ru.makcpp.randomblock.serialization.PlayerBlocksLists
-import ru.makcpp.randomblock.serialization.PlayerList
+import ru.makcpp.randomblock.serialization.BlocksPage
+import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.reference
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -40,15 +38,9 @@ class RandomBlockClient : ClientModInitializer {
             }
 
         val DEFAULT_CONFIG_FILE_CONTENT =
-            PlayerBlocksLists(
+            PlayerPages(
                 number = 0,
-                lists =
-                    mutableListOf(
-                        BlockItemWithProbabilityList(
-                            name = "new list 1",
-                            blocksWithProbabilities = PlayerList { BlockItemWithProbability() },
-                        ),
-                    ),
+                lists = mutableListOf(BlocksPage.newPage(1)),
             )
 
         private val CONFIG_FILE_PATH: Path =
@@ -60,7 +52,7 @@ class RandomBlockClient : ClientModInitializer {
                 .resolve("${RandomBlock.MOD_ID}_config.json")
     }
 
-    var blockItems: PlayerBlocksLists =
+    var playerPages: PlayerPages =
         if (CONFIG_FILE_PATH.notExists()) {
             LOGGER.debug("there is no config file, creating new one.")
 
@@ -71,7 +63,7 @@ class RandomBlockClient : ClientModInitializer {
         } else {
             val config = CONFIG_FILE_PATH.readText()
             try {
-                PRETTY_JSON.decodeFromString<PlayerBlocksLists>(config)
+                PRETTY_JSON.decodeFromString<PlayerPages>(config)
             } catch (e: SerializationException) {
                 LOGGER.error("Error while loading config file", e)
                 LOGGER.debug("Replacing config with default content")
@@ -106,20 +98,17 @@ class RandomBlockClient : ClientModInitializer {
         val client = this
 
         with(ClientProxy.INSTANCE!!) {
-            sendToServer = { payload ->
-                LOGGER.info("Sending to server: $payload")
-                ClientPlayNetworking.send(payload)
-            }
+            sendToServer = ClientPlayNetworking::send
 
-            blockItems = client::blockItems.reference
+            playerPagesRef = client::playerPages.reference
         }
     }
 
     private fun loadConfig() {
-        ClientPlayNetworking.send(PlayerBlocksListsPayload(this@RandomBlockClient.blockItems))
+        ClientPlayNetworking.send(PlayerBlocksListsPayload(playerPages))
     }
 
     private fun saveConfig() {
-        CONFIG_FILE_PATH.writeText(PRETTY_JSON.encodeToString<PlayerBlocksLists>(this@RandomBlockClient.blockItems))
+        CONFIG_FILE_PATH.writeText(PRETTY_JSON.encodeToString<PlayerPages>(playerPages))
     }
 }

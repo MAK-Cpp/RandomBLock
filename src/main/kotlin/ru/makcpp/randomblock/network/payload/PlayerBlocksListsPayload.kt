@@ -6,21 +6,21 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import ru.makcpp.randomblock.RandomBlock
-import ru.makcpp.randomblock.serialization.PlayerBlocksLists
+import ru.makcpp.randomblock.serialization.PlayerPages
 
 data class PlayerBlocksListsPayload(
-    val playerBlocksLists: PlayerBlocksLists,
+    val playerPages: PlayerPages,
 ) : CustomPayload {
     companion object {
         val PACKET_ID: Identifier = Identifier.of(RandomBlock.MOD_ID, "player_blocks_lists_packet")
         val ID = CustomPayload.Id<PlayerBlocksListsPayload>(PACKET_ID)
         val CODEC: PacketCodec<RegistryByteBuf, PlayerBlocksListsPayload> =
             PacketCodec.tuple(
-                PacketCodec.of<RegistryByteBuf, PlayerBlocksLists>(
+                PacketCodec.of<RegistryByteBuf, PlayerPages>(
                     { value, buf -> buf.writeString(Json.encodeToString(value)) },
-                    { buf -> Json.decodeFromString<PlayerBlocksLists>(buf.readString()) },
+                    { buf -> Json.decodeFromString<PlayerPages>(buf.readString()) },
                 ),
-                PlayerBlocksListsPayload::playerBlocksLists,
+                PlayerBlocksListsPayload::playerPages,
                 ::PlayerBlocksListsPayload,
             )
     }

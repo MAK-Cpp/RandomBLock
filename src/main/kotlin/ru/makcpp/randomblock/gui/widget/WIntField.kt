@@ -16,7 +16,7 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
         height = HEIGHT
         maxLength = Integer.MAX_VALUE
         suggestion = Text.of { "0" }
-        text = valueRef.get().let { if (it == 0) "" else it.toString() }
+        text = valueRef.value.let { if (it == 0) "" else it.toString() }
         setTextPredicate { text ->
             text.isEmpty() ||
                 text.toIntOrNull().let { num ->
@@ -24,7 +24,7 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
                 }
         }
         setChangedListener { text ->
-            valueRef.set(if (text.isEmpty()) 0 else text.toInt())
+            valueRef.value = if (text.isEmpty()) 0 else text.toInt()
         }
     }
 
@@ -39,7 +39,7 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
     override fun getY(): Int = super.getY() + 1
 
     fun update() {
-        val value = valueRef.get()
+        val value = valueRef.value
         text = if (value == 0) "" else value.toString()
     }
 }
