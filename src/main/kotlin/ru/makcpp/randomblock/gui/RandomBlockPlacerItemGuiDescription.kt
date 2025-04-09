@@ -16,11 +16,9 @@ import ru.makcpp.randomblock.client.ClientProxy
 import ru.makcpp.randomblock.gui.widget.WIntField
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
-import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.serialization.PlayerList
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.MutableValueRef
-import ru.makcpp.randomblock.util.ValueRef
 import ru.makcpp.randomblock.util.reference
 import kotlin.math.max
 
@@ -30,14 +28,22 @@ class RandomBlockPlacerItemGuiDescription(
     context: ScreenHandlerContext,
     private val playerLists: PlayerPages,
 ) : SyncedGuiDescription(
-        RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
-        syncId,
-        inventory,
-        getBlockInventory(context, INVENTORY_SIZE),
-        getBlockPropertyDelegate(context),
-    ) {
+    RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
+    syncId,
+    inventory,
+    getBlockInventory(context, INVENTORY_SIZE),
+    getBlockPropertyDelegate(context),
+) {
     companion object {
         const val INVENTORY_SIZE = 1
+
+        const val PROBABILITIES_WIDTH = 3
+
+        const val PROBABILITIES_HEIGHT = 3
+
+        const val BLOCKS_WIDTH = 3
+
+        const val BLOCKS_HEIGHT = 3
     }
 
     init {
@@ -48,7 +54,7 @@ class RandomBlockPlacerItemGuiDescription(
             setInsets(Insets.ROOT_PANEL)
 
             // Текущий лист
-            val playerListRef: ValueRef<BlocksPage> = playerLists::currentPage.reference
+            val playerListRef = playerLists::currentPage.reference
             val currentListIndexRef = playerLists::currentPageNumber.reference
 
             // Название текущего списка (в будущем добавить изменение)
@@ -57,11 +63,11 @@ class RandomBlockPlacerItemGuiDescription(
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
             val blockItemsInventory = InventoryFromList(playerListRef)
-            val blocksSet = WItemSlot(blockItemsInventory, 0, 3, 3, false)
+            val blocksSet = WItemSlot(blockItemsInventory, 0, PROBABILITIES_WIDTH, PROBABILITIES_HEIGHT, false)
             add(blocksSet, 0, 2)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
-            val probabilities: PlayerList<MutableValueRef<Int>> =
+            val probabilities =
                 PlayerList { i ->
                     MutableValueRef(
                         { playerListRef.value.blocksWithProbabilities[i].probability },
@@ -69,10 +75,38 @@ class RandomBlockPlacerItemGuiDescription(
                     )
                 }
             val intFields = probabilities.map { WIntField(it) }
-            repeat(3) { i ->
-                repeat(3) { j ->
-                    val id = i * 3 + j
-                    add(intFields[id], 3 + j * 2, 2 + i)
+
+            /**
+             * Одна ячейка будет занимать 2 ячейки предмета, то есть 32 пикселя:
+             *
+             *        2 * column
+             *            |
+             *            v
+             *          +----+----+
+             *   row -> |         |
+             *          +----+----+
+             *                 /\
+             *                 ||
+             *            2 * column + 1
+             *
+             *
+             *                                 2 * PROBABILITIES_WIDTH
+             *                                       ---------->
+             *
+             *                           +----+----+ +----+----+ +----+----+
+             *                           |         | |         | |         |
+             *                           +----+----+ +----+----+ +----+----+
+             *                       |   +----+----+ +----+----+ +----+----+
+             *  PROBABILITIES_HEIGHT |   |         | |         | |         |
+             *                       v   +----+----+ +----+----+ +----+----+
+             *                           +----+----+ +----+----+ +----+----+
+             *                           |         | |         | |         |
+             *                           +----+----+ +----+----+ +----+----+
+             */
+            repeat(PROBABILITIES_HEIGHT) { row ->
+                repeat(PROBABILITIES_WIDTH) { column ->
+                    val id = row * PROBABILITIES_WIDTH + column
+                    add(intFields[id], BLOCKS_WIDTH + column * 2, 2 + row)
                 }
             }
 
@@ -88,10 +122,13 @@ class RandomBlockPlacerItemGuiDescription(
                     currentListIndexRef.value = max(currentListIndexRef.value - 1, 0)
                     intFields.forEach { it.update() }
                 }
+            @Suppress("MagicNumber")
             add(prevListButton, 0, 5)
+            @Suppress("MagicNumber")
             add(nextListButton, 1, 5)
 
             // Инвентарь игрока
+            @Suppress("MagicNumber")
             add(gui.createPlayerInventoryPanel(), 0, 7)
 
             validate(gui)
@@ -99,7 +136,7 @@ class RandomBlockPlacerItemGuiDescription(
     }
 
     override fun onSlotClick(slotIndex: Int, button: Int, actionType: SlotActionType, player: PlayerEntity) {
-        if (slotIndex in 0 until 9 &&
+        if (slotIndex in 0 until BLOCKS_WIDTH * BLOCKS_HEIGHT &&
             this.slots[slotIndex].inventory is InventoryFromList &&
             !this.cursorStack.isEmpty
         ) {
@@ -130,7 +167,6 @@ class RandomBlockPlacerItemGuiDescription(
 
     override fun onClosed(player: PlayerEntity) {
         if (player.world.isClient) {
-            println("Client proxy called in onClosed")
             with(ClientProxy.INSTANCE!!) {
                 sendToServer(PlayerBlocksListsPayload(playerLists))
                 playerPagesRef.value = playerLists

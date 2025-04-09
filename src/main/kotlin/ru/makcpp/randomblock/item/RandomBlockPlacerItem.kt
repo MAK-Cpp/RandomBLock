@@ -71,6 +71,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         return tryPlaceBlock(blockItem)
     }
 
+    @Suppress("ReturnCount")
     private fun ItemUsageContext.useOnBlock(
         player: PlayerEntity,
         blockItemsWithProbabilities: List<BlockItemWithProbability>,
@@ -108,6 +109,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
         }
     }
 
+    @Suppress("ReturnCount")
     override fun useOnBlock(context: ItemUsageContext): ActionResult {
         if (context.world.isClient) {
             return ActionResult.SUCCESS
