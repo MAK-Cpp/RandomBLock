@@ -4,11 +4,11 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.util.ActionResult
-import ru.makcpp.randomblock.isServer
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.LoggerDelegator
 import ru.makcpp.randomblock.util.PlayersMap
+import ru.makcpp.randomblock.util.isServer
 import java.util.UUID
 import kotlin.collections.set
 
