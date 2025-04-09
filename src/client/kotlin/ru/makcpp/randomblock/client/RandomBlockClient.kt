@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ingame.HandledScreens
-import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.client.keybind.registryKeybinds
@@ -18,6 +17,7 @@ import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.serialization.PlayerPages
+import ru.makcpp.randomblock.util.LoggerDelegator
 import ru.makcpp.randomblock.util.reference
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -28,7 +28,7 @@ import kotlin.io.path.writeText
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
-        val LOGGER = LoggerFactory.getLogger(RandomBlockClient::class.java)!!
+        private val LOGGER by LoggerDelegator
 
         @OptIn(ExperimentalSerializationApi::class)
         val PRETTY_JSON =

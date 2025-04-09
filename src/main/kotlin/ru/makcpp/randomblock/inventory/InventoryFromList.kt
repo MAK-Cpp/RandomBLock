@@ -4,14 +4,13 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import ru.makcpp.randomblock.serialization.BlocksPage
+import ru.makcpp.randomblock.util.LoggerDelegator
 import ru.makcpp.randomblock.util.ValueRef
 
 class InventoryFromList(private val pageRef: ValueRef<BlocksPage>) : Inventory {
     companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(InventoryFromList::class.java)
+        private val LOGGER by LoggerDelegator
     }
 
     private val blockItems
