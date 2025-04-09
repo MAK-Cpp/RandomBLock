@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.util.ActionResult
+import ru.makcpp.randomblock.exception.ImpossibleBehaviorException
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.LoggerDelegator
@@ -58,7 +59,7 @@ class RandomBlockPlacerItem(settings: Settings) : ModItem(settings) {
             }
         }
         // Теоретически сюда выполнение не должно доходить
-        throw IllegalStateException("No probabilities found")
+        throw ImpossibleBehaviorException("No probabilities found")
     }
 
     private fun ItemUsageContext.useOnBlockInCreative(

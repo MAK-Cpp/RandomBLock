@@ -12,20 +12,6 @@ import net.minecraft.util.Identifier
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.util.camelToSnakeCase
 
-/**
- * Абстракция над Item для того, чтобы отделить обычные предметы от предметов мода.
- *
- * (?) Проблема: не совместимо с BlockItem, т.к. это тоже наследник от Item
- */
-abstract class ModItem(settings: Settings) : Item(settings)
-
-val Item.id: Identifier
-    get() =
-        Registries.ITEM
-            .getKey(this)
-            .get()
-            .registry
-
 private inline fun <reified T : ModItem> generateItemId(): Identifier = T::class
     .simpleName
     ?.let { Identifier.of(RandomBlock.MOD_ID, it.camelToSnakeCase()) }
@@ -35,7 +21,7 @@ private inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) ->
     // Create the item key.
     val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, generateItemId<T>())
     // Create the item instance.
-    val item: T = itemFactory(settings.registryKey(itemKey))
+    val item = itemFactory(settings.registryKey(itemKey))
     // Register the item.
     Registry.register(Registries.ITEM, itemKey, item)
 

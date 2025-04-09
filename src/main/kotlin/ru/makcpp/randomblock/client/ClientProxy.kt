@@ -9,23 +9,9 @@ import ru.makcpp.randomblock.util.MutableValueRef
 
 @Environment(EnvType.CLIENT)
 class ClientProxy private constructor() {
-    // TODO: попробовать заменить на простую запись вида
-    /**
-     *
-     * ```kt
-     * val INSTANCE = if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) ClientProxy() else null
-     * ```
-     */
     companion object {
-        private val CLIENT_PROXY_INSTANCE = ClientProxy()
-
-        val INSTANCE: ClientProxy?
-            get() {
-                val env = FabricLoader.getInstance().environmentType
-                val result = if (env == EnvType.CLIENT) CLIENT_PROXY_INSTANCE else null
-                println("Environment: $env, ClientProxy: $result")
-                return result
-            }
+        val INSTANCE: ClientProxy? =
+            if (FabricLoader.getInstance().environmentType == EnvType.CLIENT) ClientProxy() else null
     }
 
     @Environment(EnvType.CLIENT)

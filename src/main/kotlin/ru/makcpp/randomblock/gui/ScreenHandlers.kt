@@ -11,8 +11,8 @@ import net.minecraft.screen.ScreenHandlerContext
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
-import ru.makcpp.randomblock.item.id
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
+import ru.makcpp.randomblock.util.id
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
     ExtendedScreenHandlerType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
