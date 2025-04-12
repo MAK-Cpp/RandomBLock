@@ -49,4 +49,8 @@ class WProbabilitiesPanel(probabilities: PlayerList<MutableValueRef<Int>>) : WGr
             }
         }
     }
+
+    fun update() {
+        probabilityFields.forEach { it.update() }
+    }
 }

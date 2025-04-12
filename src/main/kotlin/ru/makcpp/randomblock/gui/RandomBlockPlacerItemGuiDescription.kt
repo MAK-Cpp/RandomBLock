@@ -4,7 +4,6 @@ import io.github.cottonmc.cotton.gui.SyncedGuiDescription
 import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WDynamicLabel
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
-import io.github.cottonmc.cotton.gui.widget.WItemSlot
 import io.github.cottonmc.cotton.gui.widget.data.Insets
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -13,6 +12,9 @@ import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.Text
 import net.minecraft.util.ClickType
 import ru.makcpp.randomblock.client.ClientProxy
+import ru.makcpp.randomblock.gui.widget.WBlocksPanel
+import ru.makcpp.randomblock.gui.widget.WBlocksPanel.Companion.BLOCKS_HEIGHT
+import ru.makcpp.randomblock.gui.widget.WBlocksPanel.Companion.BLOCKS_WIDTH
 import ru.makcpp.randomblock.gui.widget.WProbabilitiesPanel
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
@@ -36,10 +38,6 @@ class RandomBlockPlacerItemGuiDescription(
 ) {
     companion object {
         const val INVENTORY_SIZE = 1
-
-        const val BLOCKS_WIDTH = 3
-
-        const val BLOCKS_HEIGHT = 3
     }
 
     init {
@@ -50,24 +48,23 @@ class RandomBlockPlacerItemGuiDescription(
             setInsets(Insets.ROOT_PANEL)
 
             // Текущий лист
-            val playerListRef = playerLists::currentPage.reference
-            val currentListIndexRef = playerLists::currentPageNumber.reference
+            val playerPageRef = playerLists::currentPage.reference
+            val currentPageNumberRef = playerLists::currentPageNumber.reference
 
             // Название текущего списка (в будущем добавить изменение)
-            val label = WDynamicLabel { playerListRef.value.name }
+            val label = WDynamicLabel { playerPageRef.value.name }
             add(label, 0, 1)
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
-            val blockItemsInventory = InventoryFromList(playerListRef)
-            val blocksSet = WItemSlot(blockItemsInventory, 0, BLOCKS_WIDTH, BLOCKS_HEIGHT, false)
-            add(blocksSet, 0, 2)
+            val blockPanel = WBlocksPanel(playerPageRef)
+            add(blockPanel, 0, 2)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
             val probabilities =
                 PlayerList { i ->
                     MutableValueRef(
-                        { playerListRef.value.blocksWithProbabilities[i].probability },
-                        { playerListRef.value.blocksWithProbabilities[i].probability = it },
+                        { playerPageRef.value.blocksWithProbabilities[i].probability },
+                        { playerPageRef.value.blocksWithProbabilities[i].probability = it },
                     )
                 }
             val probabilitiesPanel = WProbabilitiesPanel(probabilities)
@@ -75,21 +72,21 @@ class RandomBlockPlacerItemGuiDescription(
             add(probabilitiesPanel, 3, 2)
 
             // Следующая страница
-            val nextListButton =
+            val nextPageButton =
                 WButton(Text.of { ">" }).setOnClick {
-                    currentListIndexRef.value++
-                    probabilitiesPanel.probabilityFields.forEach { it.update() }
+                    currentPageNumberRef.value++
+                    probabilitiesPanel.update()
                 }
             // Предыдущая страница
-            val prevListButton =
+            val prevPageButton =
                 WButton(Text.of { "<" }).setOnClick {
-                    currentListIndexRef.value = max(currentListIndexRef.value - 1, 0)
-                    probabilitiesPanel.probabilityFields.forEach { it.update() }
+                    currentPageNumberRef.value = max(currentPageNumberRef.value - 1, 0)
+                    probabilitiesPanel.update()
                 }
             @Suppress("MagicNumber")
-            add(prevListButton, 0, 5)
+            add(prevPageButton, 0, 5)
             @Suppress("MagicNumber")
-            add(nextListButton, 1, 5)
+            add(nextPageButton, 1, 5)
 
             // Инвентарь игрока
             @Suppress("MagicNumber")
