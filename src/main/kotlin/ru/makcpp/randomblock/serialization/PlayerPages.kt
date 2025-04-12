@@ -11,10 +11,10 @@ data class PlayerPages(
     private var number: Int,
     @SerialName("pages")
     @Required
-    val lists: MutableList<BlocksPage>,
+    val pages: MutableList<BlocksPage>,
 ) {
     val currentPage: BlocksPage
-        get() = lists[number]
+        get() = pages[number]
 
     var currentPageNumber: Int
         get() = number
@@ -27,20 +27,20 @@ data class PlayerPages(
                  * Если нет, то добавим недостающие страницы, и тогда currentListNumber будет смотреть на
                  * последнюю страницу
                  */
-                for (i in lists.size..value) {
-                    lists.add(BlocksPage.newPage(i + 1))
+                for (i in pages.size..value) {
+                    pages.add(BlocksPage.newPage(i + 1))
                 }
                 number = value
             } else {
                 /**
-                 * Иначе, убираем все крайние, которые пустые
+                 * Иначе, убираем все крайние, которые пустые, до value и меньше
                  */
                 number = value
-                for (i in lists.size - 1 downTo value + 1) {
-                    if (!lists.last().isEmpty) {
+                for (i in pages.size - 1 downTo value + 1) {
+                    if (!pages.last().isEmpty) {
                         break
                     }
-                    lists.removeLast()
+                    pages.removeLast()
                 }
             }
         }

@@ -32,6 +32,8 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
         return
     }
 
+    override fun canResize() = false
+
     override fun setMaxLength(max: Int): WIntField = this
 
     override fun getX(): Int = super.getX() + 1

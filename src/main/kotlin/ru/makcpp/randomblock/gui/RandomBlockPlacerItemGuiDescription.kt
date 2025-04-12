@@ -13,7 +13,7 @@ import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.Text
 import net.minecraft.util.ClickType
 import ru.makcpp.randomblock.client.ClientProxy
-import ru.makcpp.randomblock.gui.widget.WIntField
+import ru.makcpp.randomblock.gui.widget.WProbabilitiesPanel
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.serialization.PlayerList
@@ -37,10 +37,6 @@ class RandomBlockPlacerItemGuiDescription(
     companion object {
         const val INVENTORY_SIZE = 1
 
-        const val PROBABILITIES_WIDTH = 3
-
-        const val PROBABILITIES_HEIGHT = 3
-
         const val BLOCKS_WIDTH = 3
 
         const val BLOCKS_HEIGHT = 3
@@ -63,7 +59,7 @@ class RandomBlockPlacerItemGuiDescription(
 
             // Набор блоков, из которых будет рандомно ставиться какой-то случайный
             val blockItemsInventory = InventoryFromList(playerListRef)
-            val blocksSet = WItemSlot(blockItemsInventory, 0, PROBABILITIES_WIDTH, PROBABILITIES_HEIGHT, false)
+            val blocksSet = WItemSlot(blockItemsInventory, 0, BLOCKS_WIDTH, BLOCKS_HEIGHT, false)
             add(blocksSet, 0, 2)
 
             // Вероятность появления какого-то блока (считается как p_i / sum_i p_i)
@@ -74,53 +70,21 @@ class RandomBlockPlacerItemGuiDescription(
                         { playerListRef.value.blocksWithProbabilities[i].probability = it },
                     )
                 }
-            val intFields = probabilities.map { WIntField(it) }
-
-            /**
-             * Одна ячейка будет занимать 2 ячейки предмета, то есть 32 пикселя:
-             *
-             *        2 * column
-             *            |
-             *            v
-             *          +----+----+
-             *   row -> |         |
-             *          +----+----+
-             *                 /\
-             *                 ||
-             *            2 * column + 1
-             *
-             *
-             *                                 2 * PROBABILITIES_WIDTH
-             *                                       ---------->
-             *
-             *                           +----+----+ +----+----+ +----+----+
-             *                           |         | |         | |         |
-             *                           +----+----+ +----+----+ +----+----+
-             *                       |   +----+----+ +----+----+ +----+----+
-             *  PROBABILITIES_HEIGHT |   |         | |         | |         |
-             *                       v   +----+----+ +----+----+ +----+----+
-             *                           +----+----+ +----+----+ +----+----+
-             *                           |         | |         | |         |
-             *                           +----+----+ +----+----+ +----+----+
-             */
-            repeat(PROBABILITIES_HEIGHT) { row ->
-                repeat(PROBABILITIES_WIDTH) { column ->
-                    val id = row * PROBABILITIES_WIDTH + column
-                    add(intFields[id], BLOCKS_WIDTH + column * 2, 2 + row)
-                }
-            }
+            val probabilitiesPanel = WProbabilitiesPanel(probabilities)
+            @Suppress("MagicNumber")
+            add(probabilitiesPanel, 3, 2)
 
             // Следующая страница
             val nextListButton =
                 WButton(Text.of { ">" }).setOnClick {
                     currentListIndexRef.value++
-                    intFields.forEach { it.update() }
+                    probabilitiesPanel.probabilityFields.forEach { it.update() }
                 }
             // Предыдущая страница
             val prevListButton =
                 WButton(Text.of { "<" }).setOnClick {
                     currentListIndexRef.value = max(currentListIndexRef.value - 1, 0)
-                    intFields.forEach { it.update() }
+                    probabilitiesPanel.probabilityFields.forEach { it.update() }
                 }
             @Suppress("MagicNumber")
             add(prevListButton, 0, 5)

@@ -40,7 +40,7 @@ class RandomBlockClient : ClientModInitializer {
         val DEFAULT_CONFIG_FILE_CONTENT =
             PlayerPages(
                 number = 0,
-                lists = mutableListOf(BlocksPage.newPage(1)),
+                pages = mutableListOf(BlocksPage.newPage(1)),
             )
 
         private val CONFIG_FILE_PATH: Path =
