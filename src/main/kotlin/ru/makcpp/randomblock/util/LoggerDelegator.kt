@@ -7,12 +7,7 @@ import kotlin.reflect.KProperty
 object LoggerDelegator {
     operator fun getValue(thisRef: Any, property: KProperty<*>): Logger {
         val kClass = thisRef::class
-        val jClass =
-            if (kClass.isCompanion) {
-                kClass.java.declaringClass
-            } else {
-                kClass.java
-            }
+        val jClass = kClass.java.run { if (kClass.isCompanion) declaringClass else this }
         return LoggerFactory.getLogger(jClass)
     }
 }

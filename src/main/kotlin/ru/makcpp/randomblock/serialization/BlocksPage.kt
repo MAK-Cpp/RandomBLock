@@ -30,4 +30,19 @@ data class BlocksPage(
 
     val isEmpty: Boolean
         get() = blocksWithProbabilities.all { it.isEmpty }
+
+    val uniqueBlocksWithProbabilityPercents: List<Pair<BlockItem, String>>
+        get() {
+            val resultMap = mutableMapOf<BlockItem, Int>()
+            blocksWithProbabilities.forEach { (blockItem, probability) ->
+                if (blockItem != null) {
+                    resultMap[blockItem] = resultMap.getOrDefault(blockItem, 0) + probability
+                }
+            }
+            val probabilitiesSum = resultMap.values.sum()
+            return resultMap.map {
+                val percent: Double = if (probabilitiesSum == 0) 0.0 else it.value.toDouble() / probabilitiesSum * 100
+                it.key to String.format("%.2f", percent)
+            }
+        }
 }

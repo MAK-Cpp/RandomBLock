@@ -16,6 +16,7 @@ import ru.makcpp.randomblock.gui.widget.WBlocksPanel
 import ru.makcpp.randomblock.gui.widget.WBlocksPanel.Companion.BLOCKS_HEIGHT
 import ru.makcpp.randomblock.gui.widget.WBlocksPanel.Companion.BLOCKS_WIDTH
 import ru.makcpp.randomblock.gui.widget.WProbabilitiesPanel
+import ru.makcpp.randomblock.gui.widget.WResultPanel
 import ru.makcpp.randomblock.inventory.InventoryFromList
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.serialization.PlayerList
@@ -68,6 +69,7 @@ class RandomBlockPlacerItemGuiDescription(
                     )
                 }
             val probabilitiesPanel = WProbabilitiesPanel(probabilities)
+
             @Suppress("MagicNumber")
             add(probabilitiesPanel, 3, 2)
 
@@ -87,6 +89,12 @@ class RandomBlockPlacerItemGuiDescription(
             add(prevPageButton, 0, 5)
             @Suppress("MagicNumber")
             add(nextPageButton, 1, 5)
+
+            // Отображение итогового результата выбора игрока
+            @Suppress("MagicNumber")
+            val resultPanel = WResultPanel(playerPageRef)
+            @Suppress("MagicNumber")
+            add(resultPanel, 9, 1)
 
             // Инвентарь игрока
             @Suppress("MagicNumber")
