@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.minecraft.world.item.BlockItem
 import ru.makcpp.randomblock.util.MutableValueRef
-import ru.makcpp.randomblock.util.reference
+import ru.makcpp.randomblock.util.mutableRef
 
 @Serializable
 data class BlocksPage(
@@ -23,10 +23,10 @@ data class BlocksPage(
     }
 
     val blocks: PlayerList<MutableValueRef<BlockItem?>>
-        get() = PlayerList.Companion(blocksWithProbabilities.map { it::blockItem.reference })
+        get() = PlayerList.Companion(blocksWithProbabilities.map { it::blockItem.mutableRef })
 
     val probabilities: PlayerList<MutableValueRef<Int>>
-        get() = PlayerList.Companion(blocksWithProbabilities.map { it::probability.reference })
+        get() = PlayerList.Companion(blocksWithProbabilities.map { it::probability.mutableRef })
 
     val isEmpty: Boolean
         get() = blocksWithProbabilities.all { it.isEmpty }

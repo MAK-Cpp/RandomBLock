@@ -1,4 +1,4 @@
-package ru.makcpp.randomblock.gui.widget
+package ru.makcpp.randomblock.client.gui.widget
 
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.WItem

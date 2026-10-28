@@ -24,8 +24,8 @@ class MutableValueRef<T>(getFunction: () -> T, private val setFunction: (T) -> U
         }
 }
 
-val <T> KProperty0<T>.reference
+val <T> KProperty0<T>.ref: ValueRef<T>
     get() = ValueRef(getter)
 
-val <T> KMutableProperty0<T>.reference
+val <T> KMutableProperty0<T>.mutableRef: MutableValueRef<T>
     get() = MutableValueRef(getter, setter)

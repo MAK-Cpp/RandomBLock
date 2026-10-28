@@ -7,7 +7,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.KeyMapping
 import net.minecraft.resources.Identifier
 import ru.makcpp.randomblock.RandomBlock
-import ru.makcpp.randomblock.network.payload.OpenGuiPayload
+import ru.makcpp.randomblock.client.RandomBlockClient
+import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemGuiDescription
+import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
+import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 
 private val OPENGUI_KEYBIND =
     KeyMappingHelper.registerKeyMapping(
@@ -19,10 +22,23 @@ private val OPENGUI_KEYBIND =
         ),
     )
 
-fun registryKeybinds() {
+fun RandomBlockClient.registryKeybinds() {
+    val modClient = this
+
     ClientTickEvents.END_CLIENT_TICK.register { client ->
         while (OPENGUI_KEYBIND.consumeClick()) {
-            ClientPlayNetworking.send(OpenGuiPayload())
+            if (client.player == null) {
+                continue
+            }
+
+            val gui = RandomBlockPlacerItemGuiDescription(modClient.playerPages) { pages ->
+                modClient.playerPages = pages
+                ClientPlayNetworking.send(PlayerBlocksListsPayload(pages))
+            }
+
+            val screen = RandomBlockPlacerItemScreen(gui)
+
+            client.setScreenAndShow(screen)
         }
     }
 }

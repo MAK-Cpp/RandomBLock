@@ -12,18 +12,13 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.MenuScreens
 import ru.makcpp.randomblock.RandomBlock
-import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.client.keybind.registryKeybinds
 import ru.makcpp.randomblock.client.network.registryClientNetwork
-import ru.makcpp.randomblock.gui.RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER
-import ru.makcpp.randomblock.gui.RandomBlockPlacerItemGuiDescription
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.LoggerDelegator
-import ru.makcpp.randomblock.util.reference
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
@@ -79,27 +74,9 @@ class RandomBlockClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { handler, client ->
             saveConfig()
         }
-        // Экран для предмета, где можно настраивать блоки
-        MenuScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(
-            RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
-        ) { gui, inventory, title -> RandomBlockPlacerItemScreen(gui, inventory.player, title) }
 
-        configureClientProxy()
         registryKeybinds()
         registryClientNetwork()
-    }
-
-    /**
-     * Настраиваем клиентские методы в common коде, которые там не доступны по умолчанию, например, [ClientPlayNetworking.send]
-     */
-    private fun configureClientProxy() {
-        val client = this
-
-        with(ClientProxy.INSTANCE!!) {
-            sendToServer = ClientPlayNetworking::send
-
-            playerPagesRef = client::playerPages.reference
-        }
     }
 
     private fun loadConfig() {
