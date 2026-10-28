@@ -50,8 +50,8 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
     maven {
-        name = "CottonMC"
-        url = URI("https://server.bbkr.space/artifactory/libs-release")
+        name = "AlexIIL"
+        url = URI("https://staging.alexiil.uk/maven/")
     }
 }
 
