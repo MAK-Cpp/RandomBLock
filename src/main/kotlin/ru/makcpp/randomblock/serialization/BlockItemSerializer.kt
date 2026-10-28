@@ -7,7 +7,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.BlockItem
 
 object BlockItemSerializer : KSerializer<BlockItem?> {
@@ -28,7 +28,7 @@ object BlockItemSerializer : KSerializer<BlockItem?> {
         if (string == "null") {
             return null
         }
-        val itemId = ResourceLocation.parse(string)
+        val itemId = Identifier.parse(string)
         return BuiltInRegistries.ITEM.getValue(itemId) as BlockItem
     }
 }

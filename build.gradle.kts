@@ -3,11 +3,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
 plugins {
-    kotlin("jvm") version "2.1.20"
-    kotlin("plugin.serialization") version "2.1.0"
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.serialization") version "2.4.21"
+    id("net.fabricmc.fabric-loom") version "1.17.21"
     id("maven-publish")
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("dev.detekt") version "2.0.0-alpha.6"
 }
 
 version = project.property("mod_version") as String
@@ -18,12 +18,12 @@ base {
 }
 
 detekt {
-    toolVersion = "1.23.8"
+    toolVersion = "2.0.0-alpha.6"
     config.setFrom(file("detekt.yml"))
     buildUponDefaultConfig = true
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -58,20 +58,19 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
     include("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     // https://github.com/CottonMC/LibGui
-    modImplementation("io.github.cottonmc:LibGui:13.0.0+1.21.5")
-    include("io.github.cottonmc:LibGui:13.0.0+1.21.5")
+    implementation("io.github.cottonmc:LibGui:18.0.1+26.3-rc-2")
+    include("io.github.cottonmc:LibGui:18.0.1+26.3-rc-2")
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
+    detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.6")
 }
 
 tasks.processResources {
@@ -83,9 +82,9 @@ tasks.processResources {
     filesMatching("fabric.mod.json") {
         expand(
             "version" to project.version,
-            "minecraft_version" to project.property("minecraft_version"),
-            "loader_version" to project.property("loader_version"),
-            "kotlin_loader_version" to project.property("kotlin_loader_version"),
+            "minecraft_version" to project.property("minecraft_version").toString(),
+            "loader_version" to project.property("loader_version").toString(),
+            "kotlin_loader_version" to project.property("kotlin_loader_version").toString(),
         )
     }
 }

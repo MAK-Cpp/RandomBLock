@@ -1,4 +1,6 @@
 {
+  "key.category.randomblock.main": "Random Block Placer",
+  "key.randomblock.gui": "Open block selection",
   "item.randomblock.random_block_placer_item": "Random block placer",
   "message.error.rbp_already_in_inventory": "You already have a Random Block Placer in your inventory",
   "gui.text.result_panel": "Result (%):"

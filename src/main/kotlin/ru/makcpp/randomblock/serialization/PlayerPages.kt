@@ -21,7 +21,7 @@ data class PlayerPages(
         set(value) {
             require(value >= 0) { "Cannot set negate value" }
             if (value > number) {
-                /**
+                /*
                  * Если новый номер больше старого, то новое значение либо меньше кол-ва страниц, либо нет
                  *
                  * Если нет, то добавим недостающие страницы, и тогда currentListNumber будет смотреть на
@@ -32,7 +32,7 @@ data class PlayerPages(
                 }
                 number = value
             } else {
-                /**
+                /*
                  * Иначе, убираем все крайние, которые пустые, до value и меньше
                  */
                 number = value

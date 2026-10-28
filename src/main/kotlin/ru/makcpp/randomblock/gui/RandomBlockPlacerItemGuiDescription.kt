@@ -5,11 +5,12 @@ import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WDynamicLabel
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.data.Insets
+import kotlin.math.max
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.ClickAction
-import net.minecraft.world.inventory.ClickType
+import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.inventory.ContainerLevelAccess
 import ru.makcpp.randomblock.client.ClientProxy
 import ru.makcpp.randomblock.gui.widget.WBlocksPanel
@@ -23,7 +24,6 @@ import ru.makcpp.randomblock.serialization.PlayerList
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.reference
-import kotlin.math.max
 
 class RandomBlockPlacerItemGuiDescription(
     syncId: Int,
@@ -104,7 +104,7 @@ class RandomBlockPlacerItemGuiDescription(
         }
     }
 
-    override fun clicked(slotIndex: Int, button: Int, actionType: ClickType, player: Player) {
+    override fun clicked(slotIndex: Int, button: Int, actionType: ContainerInput, player: Player) {
         if (slotIndex in 0 until BLOCKS_WIDTH * BLOCKS_HEIGHT &&
             this.slots[slotIndex].container is InventoryFromList &&
             !this.carried.isEmpty
@@ -114,7 +114,7 @@ class RandomBlockPlacerItemGuiDescription(
             val cursorItemStack = this.carried
             val clickType = if (button == 0) ClickAction.PRIMARY else ClickAction.SECONDARY
             when (actionType) {
-                ClickType.PICKUP, ClickType.QUICK_CRAFT -> {
+                ContainerInput.PICKUP, ContainerInput.QUICK_CRAFT -> {
                     player.updateTutorialInventoryAction(cursorItemStack, slot.item, clickType)
 
                     if (!slotItemStack.isEmpty) {

@@ -1,5 +1,6 @@
 package ru.makcpp.randomblock.item
 
+import java.util.UUID
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.BlockItem
@@ -10,8 +11,6 @@ import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.LoggerDelegator
 import ru.makcpp.randomblock.util.PlayersMap
 import ru.makcpp.randomblock.util.isServer
-import java.util.UUID
-import kotlin.collections.set
 
 /**
  * Предмет для случайного выбора блока и установки его.
@@ -52,10 +51,10 @@ class RandomBlockPlacerItem(settings: Properties) : ModItem(settings) {
         val randomValue = (0 until totalProbability).random()
 
         var cumulative = 0
-        for (item in filteredList) {
-            cumulative += item.probability
+        for ((blockItem, probability) in filteredList) {
+            cumulative += probability
             if (randomValue < cumulative) {
-                return item.blockItem
+                return blockItem
             }
         }
         // Теоретически сюда выполнение не должно доходить

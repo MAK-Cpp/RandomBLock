@@ -1,6 +1,11 @@
 package ru.makcpp.randomblock.client
 
-import kotlinx.serialization.ExperimentalSerializationApi
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.notExists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
@@ -19,18 +24,11 @@ import ru.makcpp.randomblock.serialization.BlocksPage
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.LoggerDelegator
 import ru.makcpp.randomblock.util.reference
-import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
-import kotlin.io.path.notExists
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
 
 class RandomBlockClient : ClientModInitializer {
     companion object {
         private val LOGGER by LoggerDelegator
 
-        @OptIn(ExperimentalSerializationApi::class)
         val PRETTY_JSON =
             Json {
                 prettyPrint = true

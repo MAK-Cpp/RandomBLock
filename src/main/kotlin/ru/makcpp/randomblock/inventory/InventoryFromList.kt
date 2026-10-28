@@ -19,7 +19,7 @@ class InventoryFromList(private val pageRef: ValueRef<BlocksPage>) : Container {
     private val blockItemsAsStacks
         get() =
             blockItems
-                .map { if (it.value != null) ItemStack(it.value) else ItemStack.EMPTY }
+                .map { ref -> ref.value?.let { ItemStack(it) } ?: ItemStack.EMPTY }
                 .toMutableList()
 
     override fun getContainerSize(): Int = blockItems.size

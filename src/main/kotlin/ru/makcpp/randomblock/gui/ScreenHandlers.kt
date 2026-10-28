@@ -1,7 +1,7 @@
 package ru.makcpp.randomblock.gui
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
@@ -15,11 +15,11 @@ import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.util.id
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
-    ExtendedScreenHandlerType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
+    ExtendedMenuType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
     Registry.register(
         BuiltInRegistries.MENU,
         RANDOM_BLOCK_PLACER_ITEM.id,
-        ExtendedScreenHandlerType(
+        ExtendedMenuType(
             { syncId, inventory, data ->
                 RandomBlockPlacerItemGuiDescription(
                     syncId,
@@ -33,7 +33,7 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
     )
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY =
-    object : ExtendedScreenHandlerFactory<PlayerBlocksListsPayload> {
+    object : ExtendedMenuProvider<PlayerBlocksListsPayload> {
         override fun getScreenOpeningData(player: ServerPlayer): PlayerBlocksListsPayload =
             PlayerBlocksListsPayload(RANDOM_BLOCK_PLACER_ITEM[player.uuid])
 

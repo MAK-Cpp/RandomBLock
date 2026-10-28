@@ -1,7 +1,7 @@
 package ru.makcpp.randomblock.util
 
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 
@@ -14,7 +14,7 @@ fun String.camelToSnakeCase(): String = buildString {
     }
 }
 
-val Item.id: ResourceLocation
+val Item.id: Identifier
     get() =
         BuiltInRegistries.ITEM
             .getResourceKey(this)
