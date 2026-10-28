@@ -3,7 +3,7 @@ package ru.makcpp.randomblock.serialization
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.minecraft.item.BlockItem
+import net.minecraft.world.item.BlockItem
 
 @Serializable
 data class BlockItemWithProbability(

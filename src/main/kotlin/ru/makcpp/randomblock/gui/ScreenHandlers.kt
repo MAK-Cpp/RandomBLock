@@ -2,14 +2,14 @@ package ru.makcpp.randomblock.gui
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.ScreenHandlerContext
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.inventory.ContainerLevelAccess
 import ru.makcpp.randomblock.item.RANDOM_BLOCK_PLACER_ITEM
 import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 import ru.makcpp.randomblock.util.id
@@ -17,14 +17,14 @@ import ru.makcpp.randomblock.util.id
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
     ExtendedScreenHandlerType<RandomBlockPlacerItemGuiDescription, PlayerBlocksListsPayload> =
     Registry.register(
-        Registries.SCREEN_HANDLER,
+        BuiltInRegistries.MENU,
         RANDOM_BLOCK_PLACER_ITEM.id,
         ExtendedScreenHandlerType(
             { syncId, inventory, data ->
                 RandomBlockPlacerItemGuiDescription(
                     syncId,
                     inventory,
-                    ScreenHandlerContext.EMPTY,
+                    ContainerLevelAccess.NULL,
                     data.playerPages,
                 )
             },
@@ -34,16 +34,16 @@ val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER:
 
 val RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY =
     object : ExtendedScreenHandlerFactory<PlayerBlocksListsPayload> {
-        override fun getScreenOpeningData(player: ServerPlayerEntity): PlayerBlocksListsPayload =
+        override fun getScreenOpeningData(player: ServerPlayer): PlayerBlocksListsPayload =
             PlayerBlocksListsPayload(RANDOM_BLOCK_PLACER_ITEM[player.uuid])
 
-        override fun getDisplayName() = Text.translatable("item.randomblock.random_block_placer_item")
+        override fun getDisplayName() = Component.translatable("item.randomblock.random_block_placer_item")
 
-        override fun createMenu(syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity): ScreenHandler =
+        override fun createMenu(syncId: Int, playerInventory: Inventory, player: Player): AbstractContainerMenu =
             RandomBlockPlacerItemGuiDescription(
                 syncId,
                 playerInventory,
-                ScreenHandlerContext.create(player.world, player.blockPos),
+                ContainerLevelAccess.create(player.level(), player.blockPosition()),
                 RANDOM_BLOCK_PLACER_ITEM[player.uuid],
             )
     }

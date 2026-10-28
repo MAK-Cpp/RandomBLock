@@ -1,39 +1,39 @@
 package ru.makcpp.randomblock.item
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
-import net.minecraft.item.Item
-import net.minecraft.item.Item.Settings
-import net.minecraft.item.ItemGroups
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.CreativeModeTabs
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Item.Properties
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.util.camelToSnakeCase
 
-private inline fun <reified T : ModItem> generateItemId(): Identifier = T::class
+private inline fun <reified T : ModItem> generateItemId(): ResourceLocation = T::class
     .simpleName
-    ?.let { Identifier.of(RandomBlock.MOD_ID, it.camelToSnakeCase()) }
+    ?.let { ResourceLocation.fromNamespaceAndPath(RandomBlock.MOD_ID, it.camelToSnakeCase()) }
     ?: throw IllegalArgumentException("No class name for ModItem")
 
-private inline fun <reified T : ModItem> registerItem(itemFactory: (Settings) -> T, settings: Settings): T {
+private inline fun <reified T : ModItem> registerItem(itemFactory: (Properties) -> T, settings: Properties): T {
     // Create the item key.
-    val itemKey = RegistryKey.of<Item>(RegistryKeys.ITEM, generateItemId<T>())
+    val itemKey = ResourceKey.create<Item>(Registries.ITEM, generateItemId<T>())
     // Create the item instance.
-    val item = itemFactory(settings.registryKey(itemKey))
+    val item = itemFactory(settings.setId(itemKey))
     // Register the item.
-    Registry.register(Registries.ITEM, itemKey, item)
+    Registry.register(BuiltInRegistries.ITEM, itemKey, item)
 
     return item
 }
 
-val RANDOM_BLOCK_PLACER_ITEM = registerItem(::RandomBlockPlacerItem, Settings().maxCount(1))
+val RANDOM_BLOCK_PLACER_ITEM = registerItem(::RandomBlockPlacerItem, Properties().stacksTo(1))
 
 fun registerItems() {
-    ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register {
+    ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES).register {
         with(it) {
-            add(RANDOM_BLOCK_PLACER_ITEM)
+            accept(RANDOM_BLOCK_PLACER_ITEM)
         }
     }
 }

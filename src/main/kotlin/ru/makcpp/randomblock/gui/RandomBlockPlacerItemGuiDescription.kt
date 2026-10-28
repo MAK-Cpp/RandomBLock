@@ -5,12 +5,12 @@ import io.github.cottonmc.cotton.gui.widget.WButton
 import io.github.cottonmc.cotton.gui.widget.WDynamicLabel
 import io.github.cottonmc.cotton.gui.widget.WGridPanel
 import io.github.cottonmc.cotton.gui.widget.data.Insets
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.screen.ScreenHandlerContext
-import net.minecraft.screen.slot.SlotActionType
-import net.minecraft.text.Text
-import net.minecraft.util.ClickType
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.ClickAction
+import net.minecraft.world.inventory.ClickType
+import net.minecraft.world.inventory.ContainerLevelAccess
 import ru.makcpp.randomblock.client.ClientProxy
 import ru.makcpp.randomblock.gui.widget.WBlocksPanel
 import ru.makcpp.randomblock.gui.widget.WBlocksPanel.Companion.BLOCKS_HEIGHT
@@ -27,8 +27,8 @@ import kotlin.math.max
 
 class RandomBlockPlacerItemGuiDescription(
     syncId: Int,
-    inventory: PlayerInventory,
-    context: ScreenHandlerContext,
+    inventory: Inventory,
+    context: ContainerLevelAccess,
     private val playerLists: PlayerPages,
 ) : SyncedGuiDescription(
     RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
@@ -75,13 +75,13 @@ class RandomBlockPlacerItemGuiDescription(
 
             // Следующая страница
             val nextPageButton =
-                WButton(Text.of { ">" }).setOnClick {
+                WButton(Component.literal(">")).setOnClick {
                     currentPageNumberRef.value++
                     probabilitiesPanel.update()
                 }
             // Предыдущая страница
             val prevPageButton =
-                WButton(Text.of { "<" }).setOnClick {
+                WButton(Component.literal("<")).setOnClick {
                     currentPageNumberRef.value = max(currentPageNumberRef.value - 1, 0)
                     probabilitiesPanel.update()
                 }
@@ -104,43 +104,43 @@ class RandomBlockPlacerItemGuiDescription(
         }
     }
 
-    override fun onSlotClick(slotIndex: Int, button: Int, actionType: SlotActionType, player: PlayerEntity) {
+    override fun clicked(slotIndex: Int, button: Int, actionType: ClickType, player: Player) {
         if (slotIndex in 0 until BLOCKS_WIDTH * BLOCKS_HEIGHT &&
-            this.slots[slotIndex].inventory is InventoryFromList &&
-            !this.cursorStack.isEmpty
+            this.slots[slotIndex].container is InventoryFromList &&
+            !this.carried.isEmpty
         ) {
             val slot = this.slots[slotIndex]
-            val slotItemStack = slot.stack
-            val cursorItemStack = this.cursorStack
-            val clickType = if (button == 0) ClickType.LEFT else ClickType.RIGHT
+            val slotItemStack = slot.item
+            val cursorItemStack = this.carried
+            val clickType = if (button == 0) ClickAction.PRIMARY else ClickAction.SECONDARY
             when (actionType) {
-                SlotActionType.PICKUP, SlotActionType.QUICK_CRAFT -> {
-                    player.onPickupSlotClick(cursorItemStack, slot.stack, clickType)
+                ClickType.PICKUP, ClickType.QUICK_CRAFT -> {
+                    player.updateTutorialInventoryAction(cursorItemStack, slot.item, clickType)
 
                     if (!slotItemStack.isEmpty) {
-                        slotItemStack.decrement(slotItemStack.count)
+                        slotItemStack.shrink(slotItemStack.count)
                     }
                     val currentCount = cursorItemStack.count
-                    slot.insertStack(cursorItemStack, 1)
+                    slot.safeInsert(cursorItemStack, 1)
                     cursorItemStack.count = currentCount
 
-                    slot.markDirty()
+                    slot.setChanged()
                 }
 
-                else -> super.onSlotClick(slotIndex, button, actionType, player)
+                else -> super.clicked(slotIndex, button, actionType, player)
             }
         } else {
-            super.onSlotClick(slotIndex, button, actionType, player)
+            super.clicked(slotIndex, button, actionType, player)
         }
     }
 
-    override fun onClosed(player: PlayerEntity) {
-        if (player.world.isClient) {
+    override fun removed(player: Player) {
+        if (player.level().isClientSide) {
             with(ClientProxy.INSTANCE!!) {
                 sendToServer(PlayerBlocksListsPayload(playerLists))
                 playerPagesRef.value = playerLists
             }
         }
-        super.onClosed(player)
+        super.removed(player)
     }
 }

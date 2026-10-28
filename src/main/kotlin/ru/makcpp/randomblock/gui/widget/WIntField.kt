@@ -1,7 +1,7 @@
 package ru.makcpp.randomblock.gui.widget
 
 import io.github.cottonmc.cotton.gui.widget.WTextField
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import ru.makcpp.randomblock.util.MutableValueRef
 
 class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
@@ -15,7 +15,7 @@ class WIntField(private val valueRef: MutableValueRef<Int>) : WTextField() {
         width = WIDTH
         height = HEIGHT
         maxLength = Integer.MAX_VALUE
-        suggestion = Text.of { "0" }
+        suggestion = Component.literal("0")
         text = valueRef.value.let { if (it == 0) "" else it.toString() }
         setTextPredicate { text ->
             text.isEmpty() ||

@@ -6,9 +6,9 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.minecraft.item.BlockItem
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.BlockItem
 
 object BlockItemSerializer : KSerializer<BlockItem?> {
     override val descriptor: SerialDescriptor =
@@ -18,7 +18,7 @@ object BlockItemSerializer : KSerializer<BlockItem?> {
         if (value == null) {
             encoder.encodeString("null")
         } else {
-            val itemId = Registries.ITEM.getId(value).toString()
+            val itemId = BuiltInRegistries.ITEM.getKey(value).toString()
             encoder.encodeString(itemId)
         }
     }
@@ -28,7 +28,7 @@ object BlockItemSerializer : KSerializer<BlockItem?> {
         if (string == "null") {
             return null
         }
-        val itemId = Identifier.of(string)
-        return Registries.ITEM.get(itemId) as BlockItem
+        val itemId = ResourceLocation.parse(string)
+        return BuiltInRegistries.ITEM.getValue(itemId) as BlockItem
     }
 }

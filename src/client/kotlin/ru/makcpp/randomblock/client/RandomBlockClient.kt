@@ -6,8 +6,8 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.ingame.HandledScreens
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.MenuScreens
 import ru.makcpp.randomblock.RandomBlock
 import ru.makcpp.randomblock.client.gui.RandomBlockPlacerItemScreen
 import ru.makcpp.randomblock.client.keybind.registryKeybinds
@@ -44,9 +44,9 @@ class RandomBlockClient : ClientModInitializer {
             )
 
         private val CONFIG_FILE_PATH: Path =
-            MinecraftClient
+            Minecraft
                 .getInstance()
-                .runDirectory
+                .gameDirectory
                 .toPath()
                 .resolve("config")
                 .resolve("${RandomBlock.MOD_ID}_config.json")
@@ -82,7 +82,7 @@ class RandomBlockClient : ClientModInitializer {
             saveConfig()
         }
         // Экран для предмета, где можно настраивать блоки
-        HandledScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(
+        MenuScreens.register<RandomBlockPlacerItemGuiDescription, RandomBlockPlacerItemScreen>(
             RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER,
         ) { gui, inventory, title -> RandomBlockPlacerItemScreen(gui, inventory.player, title) }
 

@@ -3,7 +3,7 @@ package ru.makcpp.randomblock.serialization
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.minecraft.item.BlockItem
+import net.minecraft.world.item.BlockItem
 import ru.makcpp.randomblock.util.MutableValueRef
 import ru.makcpp.randomblock.util.reference
 
@@ -41,7 +41,9 @@ data class BlocksPage(
             }
             val probabilitiesSum = resultMap.values.sum()
             return resultMap.map {
+                @Suppress("MagicNumber")
                 val percent: Double = if (probabilitiesSum == 0) 0.0 else it.value.toDouble() / probabilitiesSum * 100
+                @Suppress("ImplicitDefaultLocale")
                 it.key to String.format("%.2f", percent)
             }
         }

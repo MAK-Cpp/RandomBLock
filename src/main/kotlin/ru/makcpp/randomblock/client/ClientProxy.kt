@@ -3,7 +3,7 @@ package ru.makcpp.randomblock.client
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import ru.makcpp.randomblock.serialization.PlayerPages
 import ru.makcpp.randomblock.util.MutableValueRef
 
@@ -15,7 +15,7 @@ class ClientProxy private constructor() {
     }
 
     @Environment(EnvType.CLIENT)
-    lateinit var sendToServer: (payload: CustomPayload) -> Unit
+    lateinit var sendToServer: (payload: CustomPacketPayload) -> Unit
 
     @Environment(EnvType.CLIENT)
     lateinit var playerPagesRef: MutableValueRef<PlayerPages>

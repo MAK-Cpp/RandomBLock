@@ -1,11 +1,11 @@
 package ru.makcpp.randomblock.util
 
-import net.minecraft.item.Item
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
-import net.minecraft.world.World
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.Level
 
-fun World.isServer(): Boolean = !isClient
+fun Level.isServer(): Boolean = !isClientSide
 
 fun String.camelToSnakeCase(): String = buildString {
     this@camelToSnakeCase.forEach { c ->
@@ -14,9 +14,9 @@ fun String.camelToSnakeCase(): String = buildString {
     }
 }
 
-val Item.id: Identifier
+val Item.id: ResourceLocation
     get() =
-        Registries.ITEM
-            .getKey(this)
+        BuiltInRegistries.ITEM
+            .getResourceKey(this)
             .get()
-            .registry
+            .registry()

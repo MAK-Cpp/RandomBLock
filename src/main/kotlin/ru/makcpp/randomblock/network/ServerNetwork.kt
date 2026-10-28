@@ -9,7 +9,7 @@ import ru.makcpp.randomblock.network.payload.PlayerBlocksListsPayload
 fun registryServerNetwork() {
     ServerPlayNetworking.registerGlobalReceiver(OpenGuiPayload.ID) { _, context ->
         context.server().execute {
-            context.player().openHandledScreen(RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY)
+            context.player().openMenu(RANDOM_BLOCK_PLACER_ITEM_SCREEN_HANDLER_FACTORY)
         }
     }
 
