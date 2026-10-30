@@ -4,7 +4,9 @@ import java.util.UUID
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.BlockItem
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.phys.BlockHitResult
 import ru.makcpp.randomblock.exception.ImpossibleBehaviorException
 import ru.makcpp.randomblock.serialization.BlockItemWithProbability
 import ru.makcpp.randomblock.serialization.PlayerPages
@@ -35,8 +37,13 @@ class RandomBlockPlacerItem(settings: Properties) : ModItem(settings) {
         return playersListsOfBlocks.remove(playerUUID)
     }
 
-    private fun UseOnContext.tryPlaceBlock(blockItem: BlockItem): InteractionResult = if (level.isServer()) {
-        blockItem.useOn(this)
+    private fun UseOnContext.tryPlaceBlock(
+        blockItem: BlockItem,
+        stack: ItemStack = ItemStack(blockItem),
+    ): InteractionResult = if (level.isServer()) {
+        val hitResult = BlockHitResult(clickLocation, clickedFace, clickedPos, isInside)
+        val placementContext = UseOnContext(level, player, hand, stack, hitResult)
+        blockItem.useOn(placementContext)
     } else {
         InteractionResult.SUCCESS
     }
@@ -100,12 +107,7 @@ class RandomBlockPlacerItem(settings: Properties) : ModItem(settings) {
         // 6) Найдем стек у игрока, который содержит наш случайный блок
         val playersItemStack = playersItemStacks.find { it.item == randomItem } ?: return InteractionResult.PASS
 
-        return tryPlaceBlock(randomItem).also {
-            // Если смогли поставить блок, то на стороне сервера уменьшим стак с этим блоком на один
-            if (it == InteractionResult.SUCCESS && level.isServer()) {
-                playersItemStack.shrink(1)
-            }
-        }
+        return tryPlaceBlock(randomItem, playersItemStack)
     }
 
     @Suppress("ReturnCount")
